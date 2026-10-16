@@ -70,8 +70,8 @@ Every file. *(tested)*
 ---
 block: session-hook                 # must equal the folder path under docs/
 doc: CONTRACTS                      # must equal the file name
-verified_against: 7d87d3b
-verified_on: 2026-10-16
+verified_against: 6e559c3
+verified_on: 2026-09-24
 owns: [hooks/, scripts/session-start.sh]   # README.md only
 depends_on: [persistence-protocol]         # README.md only
 ---
