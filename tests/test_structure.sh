@@ -61,4 +61,11 @@ grep -q 'mcp__plugin_worklog-persist_outline__' "$skill" || fail "skill omits th
 if grep -q 'select:mcp__outline__' "$skill"; then fail "skill hardcodes the user-scope tool prefix"; fi
 note "ok: skill handles both MCP tool prefixes"
 
+# 8. No operator-identifying string anywhere in the tracked tree. The pattern is
+# split across two literals so this line itself never matches its own check.
+private_pattern='ra''qz'
+hits="$(cd "$ROOT" && git grep -liE "$private_pattern" -- . ":(exclude)tests/test_structure.sh" 2>/dev/null || true)"
+[ -z "$hits" ] || fail "operator-identifying string found in: $hits"
+note "ok: no operator-identifying strings in tracked tree"
+
 [ "$fails" = 0 ] && echo "PASS test_structure" || { echo "$fails failure(s)"; exit 1; }

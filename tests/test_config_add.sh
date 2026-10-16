@@ -26,7 +26,7 @@ one="$(cd "$tmp/one" && pwd -P)"
 rc=0; bash "$ADD" project --world Alpha --name proj-one --repo "$tmp/one" >/dev/null || rc=$?
 check "create file: exit 0" "$rc" "0"
 check "create file: exists" "$(test -f "$cfg" && echo yes)" "yes"
-check "create file: resolves" "$(cd "$tmp/one" && bash "$RESOLVE" | ident)" "Alpha config proj-one raqz.pl/Alpha/proj-one False"
+check "create file: resolves" "$(cd "$tmp/one" && bash "$RESOLVE" | ident)" "Alpha config proj-one Worklog/Alpha/proj-one False"
 
 # 2. Re-adding the same declaration is a no-op: exit 0 and the file is untouched.
 before="$(sum "$cfg")"
@@ -42,7 +42,7 @@ check "conflict: file untouched" "$(sum "$cfg")" "$before"
 
 # 4. A second project and a kb_folder keep the first entry intact.
 bash "$ADD" project --world Alpha --name proj-two --repo "$tmp/two" --kb-folder "KB/Alpha/custom" >/dev/null || true
-check "second project: first kept" "$(cd "$tmp/one" && bash "$RESOLVE" | ident)" "Alpha config proj-one raqz.pl/Alpha/proj-one False"
+check "second project: first kept" "$(cd "$tmp/one" && bash "$RESOLVE" | ident)" "Alpha config proj-one Worklog/Alpha/proj-one False"
 check "second project: kb_folder" "$(cd "$tmp/two" && bash "$RESOLVE" | ident)" "Alpha config proj-two KB/Alpha/custom False"
 check "one world entry" "$(python3 -c 'import sys,yaml;print([w["name"] for w in yaml.safe_load(open(sys.argv[1]))["worlds"]])' "$cfg")" "['Alpha']"
 
@@ -100,8 +100,8 @@ git -C "$tmp/one" worktree add -q "$tmp/one-wt" -b wt
 wcfg="$tmp/wt.yaml"
 rc=0; WORKLOG_CONFIG="$wcfg" bash "$ADD" project --world Alpha --name proj-one --repo "$tmp/one-wt" >/dev/null 2>&1 || rc=$?
 check "worktree: exit 0" "$rc" "0"
-check "worktree: resolves from worktree" "$(cd "$tmp/one-wt" && WORKLOG_CONFIG="$wcfg" bash "$RESOLVE" | ident)" "Alpha config proj-one raqz.pl/Alpha/proj-one False"
-check "worktree: resolves from main" "$(cd "$tmp/one" && WORKLOG_CONFIG="$wcfg" bash "$RESOLVE" | ident)" "Alpha config proj-one raqz.pl/Alpha/proj-one False"
+check "worktree: resolves from worktree" "$(cd "$tmp/one-wt" && WORKLOG_CONFIG="$wcfg" bash "$RESOLVE" | ident)" "Alpha config proj-one Worklog/Alpha/proj-one False"
+check "worktree: resolves from main" "$(cd "$tmp/one" && WORKLOG_CONFIG="$wcfg" bash "$RESOLVE" | ident)" "Alpha config proj-one Worklog/Alpha/proj-one False"
 before="$(sum "$wcfg")"
 rc=0; out="$(WORKLOG_CONFIG="$wcfg" bash "$ADD" project --world Alpha --name proj-one --repo "$tmp/one")" || rc=$?
 check "worktree then main: same repo, no change" "$rc $(sum "$wcfg") $(grep -c 'no change' <<<"$out")" "0 $before 1"
@@ -136,7 +136,7 @@ rc=0; WORKLOG_CONFIG="$scfg" bash "$ADD" project --world B --name p --repo "$tmp
 check "stale worktree entry: other world refused" "$([ "$rc" != 0 ] && echo yes) $(sum "$scfg")" "yes $before"
 rc=0; WORKLOG_CONFIG="$scfg" bash "$ADD" project --world A --name p --repo "$tmp/one" >/dev/null 2>&1 || rc=$?
 check "stale worktree entry: same entry rewritten" "$rc $(repos "$scfg")" "0 $one"
-check "stale worktree entry: now resolves" "$(cd "$tmp/one" && WORKLOG_CONFIG="$scfg" bash "$RESOLVE" | ident)" "A config p raqz.pl/A/p False"
+check "stale worktree entry: now resolves" "$(cd "$tmp/one" && WORKLOG_CONFIG="$scfg" bash "$RESOLVE" | ident)" "A config p Worklog/A/p False"
 icfg="$tmp/stale-ignore.yaml"
 printf 'ignore:\n  - %s\n' "$wt" > "$icfg"
 before="$(sum "$icfg")"

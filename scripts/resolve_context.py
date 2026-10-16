@@ -24,9 +24,13 @@ from pathlib import Path
 UNRESOLVED = "UNRESOLVED"
 # Plain kebab slug, or a ticket-prefixed one (AD-163-uat-checklist).
 SLUG_RE = re.compile(r"^(?:[A-Z][A-Z0-9]*-[0-9]+-)?[a-z0-9]+(?:-[a-z0-9]+)*$")
-# Used only when no config is readable; the config always wins.
+# Used only when the config's `outline:` block omits a key; the config always
+# wins. Neutral placeholders, not any operator's real collection names: set
+# `outline.root_collection` (and the other two keys, if wanted) in config.yaml
+# to route to your own Outline instance. See README.md and
+# docs/persistence-protocol/CONTRACTS.md ("Plugin config file").
 DEFAULT_OUTLINE = {
-    "root_collection": "raqz.pl",
+    "root_collection": "Worklog",
     "global_collection": "Claude's Notebook",
     "archive_collection": "Archive",
 }
