@@ -28,8 +28,20 @@ routing are untouched.
 ## Install
 
 Requires the `claude` CLI and an `outline` MCP server reachable via the standard
-transport (`https://outline.raqz.link/mcp`, Cloudflare Access + Bearer token, all
-from environment variables — no credentials are stored in this repo).
+HTTP transport, Cloudflare Access + Bearer token, all from environment
+variables — no credentials, and no one operator's Outline URL, are stored in
+this repo. Set before first use:
+
+```bash
+export OUTLINE_MCP_URL="https://outline.example.com/mcp"   # your Outline instance's MCP endpoint
+export OUTLINE_API_TOKEN="..."                              # Outline API token
+export CF_ACCESS_CLIENT_ID="..."                             # only if behind Cloudflare Access
+export CF_ACCESS_CLIENT_SECRET="..."
+```
+
+Claude Code expands `${VAR}` placeholders in a plugin's `.mcp.json` for `http`
+server `url` and `headers` fields at session start; see the
+[MCP docs](https://code.claude.com/docs/en/mcp#environment-variable-expansion-in-mcpjson).
 
 ```bash
 make                         # every target, with a one-line description each

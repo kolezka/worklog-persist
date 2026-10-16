@@ -83,15 +83,20 @@ enforcement: `` `install.sh::check_structure()` `` itself (only when `--check`
 
 ## MCP server registration
 
-`.mcp.json` defines exactly one server, `outline`, `type: "http"`, with
-`headers` sourced from environment placeholders only:
+`.mcp.json` defines exactly one server, `outline`, `type: "http"`, with `url`
+and `headers` sourced from environment placeholders only:
+`` `.mcp.json::"${OUTLINE_MCP_URL}"` ``,
 `` `.mcp.json::"CF-Access-Client-Id"` ``,
 `` `.mcp.json::"CF-Access-Client-Secret"` ``, and
-`` `.mcp.json::"${OUTLINE_API_TOKEN}"` `` [verified]. `check_structure()` rejects
-any `.mcp.json` whose server list is not exactly `["outline"]` [verified].
+`` `.mcp.json::"${OUTLINE_API_TOKEN}"` `` [verified]. No operator's Outline
+instance URL is named in this file; an operator sets `OUTLINE_MCP_URL` before
+first use, documented in `` `README.md::"OUTLINE_MCP_URL"` `` [verified].
+`check_structure()` rejects any `.mcp.json` whose server list is not exactly
+`["outline"]` [verified].
 
-enforcement: `` `tests/test_structure.sh::"single outline MCP server"` `` and
-  `` `tests/test_structure.sh::"credentials are env placeholders only"` ``.
+enforcement: `` `tests/test_structure.sh::"single outline MCP server"` ``,
+  `` `tests/test_structure.sh::"credentials are env placeholders only"` `` and
+  `` `tests/test_structure.sh::"server url is an env placeholder"` ``.
 
 ## MCP tool-prefix derivation
 
