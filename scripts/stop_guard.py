@@ -2,15 +2,16 @@
 """Stop hook for worklog-persist.
 
 Reads the Claude Code Stop-hook JSON on stdin (`session_id`, `transcript_path`,
-`cwd`, `stop_hook_active`). When substantive work has happened since the last
-Outline write in this transcript, prints `{"decision":"block","reason":...}` so
+`cwd`, `stop_hook_active`). When work has shipped since the last Outline write in
+this transcript, prints `{"decision":"block","reason":...}` so
 the model gets one more forced turn to persist state via the worklog-persist
 skill. Otherwise prints nothing. Always exits 0: this hook must never crash a
 session or turn an internal error into a stuck stop.
 
-Every block costs the user a turn, so the bar is high: a commit, push or PR, at
-least `WORKLOG_STOP_MIN_EDITS` edits, or at least `WORKLOG_STOP_MIN_TOOLS` tool
-calls. The hook stays quiet for `WORKLOG_STOP_COOLDOWN_MIN` minutes after a block
+Every block costs the user a turn, so the bar is high: only a Bash command that
+ships work counts (`SHIP_RE`: git commit or push, gh pr create or merge, a
+release, publish or deploy). Edits and long runs of tool calls never block on
+their own. The hook stays quiet for `WORKLOG_STOP_COOLDOWN_MIN` minutes after a block
 or an Outline write, and never blocks a session nobody is watching (`claude -p`,
 SDK runs).
 
@@ -42,17 +43,21 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 WRITE_RE = re.compile(r"^mcp__.*outline.*__(create_document|update_document)$")
-# A git subcommand behind any number of `-C <dir>` / `-c key=value` global options,
-# or `gh pr create`. `\b...\b(?!-)` so `commit` does not also match `commit-tree`.
+# A command that ships work. git commit/push behind any number of `-C <dir>` /
+# `-c key=value` options (`\b...\b(?!-)` so `commit` skips `commit-tree`), a PR
+# opened or merged, a release, a package publish, or a deploy.
 _GIT_OPT = r"(?:-C\s+\S+|-c\s+\S+=\S+)"
-COMMIT_RE = re.compile(
+SHIP_RE = re.compile(
     rf"\bgit\b(?:\s+{_GIT_OPT})*\s+(?:commit|push)\b(?!-)"
-    r"|\bgh\s+pr\s+create\b"
+    r"|\bgh\s+pr\s+(?:create|merge)\b"
+    r"|\bgh\s+release\s+create\b"
+    r"|\b(?:npm|pnpm|yarn|cargo|uv|poetry|gem)\s+publish\b"
+    r"|\btwine\s+upload\b"
+    r"|\bmake\s+(?:release|deploy)\b"
+    r"|\b(?:vercel|netlify|fly|flyctl|firebase|wrangler|railway|serverless|sls)\s+deploy\b"
+    r"|(?:^|[\s;&|/])(?:release|deploy)\.sh\b"
 )
-EDIT_NAMES = {"Edit", "Write", "NotebookEdit"}
-DEFAULT_MIN_TOOLS = 25
-DEFAULT_MIN_EDITS = 5
-DEFAULT_COOLDOWN_MIN = 30
+DEFAULT_COOLDOWN_MIN = 90
 # Claude Code's CLAUDE_CODE_ENTRYPOINT for `claude -p` and the Agent SDKs.
 UNATTENDED_ENTRYPOINTS = {"sdk-cli", "sdk-ts", "sdk-py"}
 SESSION_ID_BAD_CHARS_RE = re.compile(r"[^A-Za-z0-9_-]")
@@ -210,24 +215,18 @@ def parse_timestamp(value):
         return None
 
 
-def is_substantive(subset, min_tools, min_edits):
-    if len(subset) >= min_tools:
-        return True
-    edits = 0
+def has_shipped(subset):
+    """True when a Bash tool_use in `subset` ran a command matching SHIP_RE."""
     for name, tool_input, _id, _ts in subset:
-        if name in EDIT_NAMES:
-            edits += 1
-            if edits >= min_edits:
-                return True
         if name == "Bash":
             command = tool_input.get("command")
-            if isinstance(command, str) and COMMIT_RE.search(command):
+            if isinstance(command, str) and SHIP_RE.search(command):
                 return True
     return False
 
 
 def build_reason(identity):
-    lead = ("Substantive work has happened since the last Outline write. Run the "
+    lead = ("Work was committed, pushed or shipped since the last Outline write. Run the "
             "worklog-persist skill: checkpoint for ongoing work, handoff if the "
             "session is ending or blocked, or complete if the task is done.")
     trivial = "If the work was trivial and not worth a record, say so in one line and stop."
@@ -260,8 +259,6 @@ def run(data):
     if not transcript_path or not os.path.isfile(transcript_path):
         return None
 
-    min_tools = env_int("WORKLOG_STOP_MIN_TOOLS", DEFAULT_MIN_TOOLS)
-    min_edits = env_int("WORKLOG_STOP_MIN_EDITS", DEFAULT_MIN_EDITS)
     cooldown_sec = env_int("WORKLOG_STOP_COOLDOWN_MIN", DEFAULT_COOLDOWN_MIN) * 60
 
     tool_uses = load_tool_uses(transcript_path)
@@ -270,7 +267,7 @@ def run(data):
     last_write = last_write_index(tool_uses)
     start = max((found + 1) if found is not None else 0, last_write + 1)
     subset = tool_uses[start:]
-    if not is_substantive(subset, min_tools, min_edits):
+    if not has_shipped(subset):
         return None
 
     # Skipped work is not lost: the marker stays put, so it counts at the next stop.

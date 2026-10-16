@@ -59,16 +59,19 @@ one `[inferred]` from the script's structure and its shell options. No test in
 this repo constructs an unwritable state directory to exercise this path
 `[verified]`.
 
-## "Substantive" is a heuristic over the transcript format
+## "Shipped" is a heuristic over the transcript format
 
 `scripts/stop_guard.py::load_tool_uses()` parses Claude Code's JSONL transcript
 and `scripts/stop_guard.py::WRITE_RE` recognises an Outline write by tool name
 `[verified]`. A change to the transcript shape or the tool names would make the
 guard silently allow every stop, or block after a write it did not recognise
-`[inferred]`. Work done only through tools outside the edit, commit and count
-rules does not trigger it `[verified]`. The thresholds are guesses, not tuned on
-data: four edits in a row never block, while a one-line commit does
-`[verified]` from `scripts/stop_guard.py::is_substantive()`.
+`[inferred]`. Only `Bash` commands matching `scripts/stop_guard.py::SHIP_RE` trigger it, so
+work shipped through an MCP tool (a GitHub MCP pull request, say) or an unlisted
+deploy command never blocks, and a long session of uncommitted edits ends with no
+prompt `[verified]` from `scripts/stop_guard.py::has_shipped()`. That is the
+trade made in 0.3.2: an earlier edit-count and tool-count rule blocked about six
+times in one long session, each costing a turn
+`[historical: 2026-10-16, operator report from one long session]`.
 
 ## The attended signal rests on probed Claude Code variables
 

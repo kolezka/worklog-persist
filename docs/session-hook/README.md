@@ -20,8 +20,8 @@ Five files. `hooks/hooks.json` wires the plugin into Claude Code's `SessionStart
 and `Stop` events `[verified]`. `scripts/session-start.sh` is the SessionStart
 command; it prints one line of JSON carrying the reminder text, or nothing at all
 `[verified]`. `scripts/stop-guard.sh` is the Stop command, a thin wrapper around
-`scripts/stop_guard.py`: when substantive work happened since the last Outline
-write, it blocks the stop once and asks for a checkpoint, handoff or completion.
+`scripts/stop_guard.py`: when a commit, push, PR, release or deploy happened
+since the last Outline write, it blocks the stop once and asks for a checkpoint, handoff or completion.
 It stays quiet in unattended sessions and for a cooldown after each block or
 write `[verified]`. `scripts/persistence-state.sh` owns the single on/off marker file
 that silences both hooks `[verified]`.
@@ -85,7 +85,7 @@ flowchart TD
     StopEvent["Claude Code Stop event"] --> Hook
     Hook -->|"bash stop-guard.sh"| Guard["scripts/stop_guard.py"]
     Guard -->|"status"| State
-    Guard -->|"substantive, unpersisted, attended, past cooldown"| Block["decision: block, once"]
+    Guard -->|"shipped, unpersisted, attended, past cooldown"| Block["decision: block, once"]
 ```
 
 The two dotted paths cross out of this block: the env var is set by whoever runs

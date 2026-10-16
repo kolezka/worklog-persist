@@ -96,6 +96,13 @@ When disabled, the SessionStart hook stops injecting the durable-memory rule, th
 Stop hook stops blocking unpersisted turns, and no automatic writes happen. The
 manual commands still work.
 
+The Stop hook blocks a stop only after work was shipped since the last Outline
+write: a `git commit` or `git push`, `gh pr create` or `gh pr merge`, a release,
+publish or deploy command. Edits and long read-only runs never trigger it. It
+blocks at most once per piece of work, never in a non-interactive run or for an
+ignored repo, and stays quiet for 90 minutes after a block or an Outline write.
+Set `WORKLOG_STOP_COOLDOWN_MIN` to change that window (`0` turns it off).
+
 ## Commands
 
 Eight slash commands map to the persistence lifecycle:
@@ -119,11 +126,19 @@ hook's context injection is affected by known Claude Code bugs
 
 ## Persisted record schema
 
-Structured state, not a transcript. Minimum fields: repository identity; project
-and world; branch and worktree; task slug; objective; acceptance criteria; status
-(`active` / `blocked` / `handoff` / `complete`); verified facts and evidence;
-inferred/unverified items; decisions; changed files; test and verification
-results; blockers; next action; related documents; `Last updated: YYYY-MM-DD`.
+Structured state, not a transcript. The task record holds current state only,
+kept under about 4,000 characters: repository identity, branch and worktree,
+`Last updated: YYYY-MM-DD`, then sections for objective (with acceptance
+criteria), status (`active` / `blocked` / `handoff` / `complete`), decisions,
+verified facts, blockers, next action, the latest checkpoint links, and related
+documents. Checkpoints update it in place with `editMode: "patch"` of the changed
+sections.
+
+History never goes into the record. Each checkpoint, handoff or completion
+creates a short child document, `Tasks/<slug>/<YYYY-MM-DD> <short title>`, with
+changed files, commands and outcomes, and a link back to the record. This keeps
+each write small: Outline's `update_document` returns the whole body, so a record
+that grows with every checkpoint costs more context on every write.
 
 ## KB structure and routing
 
