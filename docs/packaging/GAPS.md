@@ -1,8 +1,8 @@
 ---
 block: packaging
 doc: GAPS
-verified_against: a3dc179
-verified_on: 2026-09-28
+verified_against: 7d87d3b
+verified_on: 2026-10-16
 ---
 
 # Gaps
@@ -10,18 +10,19 @@ verified_on: 2026-09-28
 Debt and unenforced boundaries in this block. A change here is free to close
 any of these without touching a contract or an invariant.
 
-## The Outline URL is hardcoded
+## Nothing validates that `OUTLINE_MCP_URL` is actually set
 
-`.mcp.json` points at one fixed endpoint,
-`` `.mcp.json::"https://outline.raqz.link/mcp"` `` [verified]. There is no
-`${OUTLINE_URL}`-style placeholder and no per-user override file shipped by
-this repo. A person who wants this plugin against a different Outline
-instance has to fork the file or maintain a local edit that `git` will flag as
-a diff on every pull. Claude Code itself supports layered `.mcp.json` scoping
-(user, project, local) in general, so a workaround likely exists at that
-layer, but this repo does not document or ship one, and that claim is not
-re-checked against Claude Code's current behaviour in this session
-[assumption].
+`.mcp.json` now reads the endpoint from `` `.mcp.json::"${OUTLINE_MCP_URL}"` ``
+[verified], so no fork is needed to point the plugin at a different Outline
+instance, closing the former "URL is hardcoded" gap. Nothing in this repo
+checks that the operator has actually exported `OUTLINE_MCP_URL` before a
+session starts: `tests/test_structure.sh::"server url is an env placeholder"`
+only proves the manifest never hardcodes a real endpoint again, not that the
+variable resolves to one at run time [verified]. An unset variable is a
+connection failure the skill's own availability check
+([`../persistence-protocol/CONTRACTS.md`](../persistence-protocol/CONTRACTS.md#availability-precondition))
+is expected to surface, not a crash, but that path is not exercised by any
+test in this repo [inferred].
 
 ## Whether an installed plugin is a live path or a cached copy is unverified
 

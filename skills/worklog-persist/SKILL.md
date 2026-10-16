@@ -98,7 +98,7 @@ context. That is intended. Never edit the file by hand: add entries only with
 Names in angle brackets come from the resolver.
 
 ```
-<root_collection>/                 active KB (usually raqz.pl)
+<root_collection>/                 active KB (default "Worklog"; set outline.root_collection in config)
   <World>/                         INDEX only
     <project>/                     = kb_path
       INDEX                        project hub
@@ -252,5 +252,5 @@ duplicate existing content (update instead).
 No orphan docs. Every record links its Plan/Spec where they exist; every doc it
 depends on gets a back-link. Add a `## Related` section with `[[doc-title]]` links.
 Update the `Tasks` parent every time a record is created, renamed, status-changed or
-closed. Never expose `raqz.pl` / `outline.raqz.link` links in public artifacts,
-commits or external messages.
+closed. Never expose the operator's Outline collection names or MCP server URL
+in public artifacts, commits or external messages.

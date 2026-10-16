@@ -1,8 +1,8 @@
 ---
 block: session-hook
 doc: CONTRACTS
-verified_against: a3dc179
-verified_on: 2026-10-01
+verified_against: 7d87d3b
+verified_on: 2026-10-16
 ---
 
 # Contracts
@@ -29,12 +29,17 @@ enforcement: `tests/test_structure.sh::"hooks.json missing wrapped SessionStart"
 
 `hooks/hooks.json::"${CLAUDE_PLUGIN_ROOT}"` resolves the plugin's own install
 directory at run time, supplied by the Claude Code plugin loader, so the same
-manifest works regardless of where the plugin was installed `[verified]`.
+manifest works regardless of where the plugin was installed `[verified]`. Both
+command strings wrap the expanded path in double quotes
+(`hooks/hooks.json::"\"${CLAUDE_PLUGIN_ROOT}"`) so a path containing a space
+cannot split the command into several words `[verified]`.
 
-enforcement: convention. No test in this repo inspects the literal `command`
-  string inside `hooks/hooks.json`; `tests/test_structure.sh` only checks that
-  the `SessionStart` key exists, not that the manifest invokes it correctly
-  `[verified]`.
+enforcement: `claude plugin validate --strict .` flags an unquoted
+  `${CLAUDE_PLUGIN_ROOT}` as a warning, which `--strict` turns into a failing
+  exit code `[verified: ran at this pin]`. No test in this repo's own suite
+  inspects the literal `command` string; `tests/test_structure.sh` only checks
+  that the `SessionStart` key exists, not that the manifest invokes it
+  correctly `[verified]`.
 
 ## `scripts/session-start.sh` output contract
 

@@ -1,8 +1,8 @@
 ---
 block: session-hook
 doc: OPERATIONS
-verified_against: a3dc179
-verified_on: 2026-10-01
+verified_against: 7d87d3b
+verified_on: 2026-10-16
 ---
 
 # Operations
@@ -13,14 +13,14 @@ Entry points, state paths, kill switches, and stuck states for this block. See
 ## Entry point
 
 Claude Code's plugin loader runs `hooks/hooks.json`'s `SessionStart` command
-(`bash ${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh`) once per session start
+(`bash "${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh"`) once per session start
 `[verified]`. There is no manual entry point for the hook itself; running
 `bash scripts/session-start.sh` directly reproduces exactly what the hook does,
 which is how `tests/test_offswitch.sh` checks it `[verified]`.
 
 ## Stop guard
 
-Claude Code runs `bash ${CLAUDE_PLUGIN_ROOT}/scripts/stop-guard.sh` at the end of
+Claude Code runs `bash "${CLAUDE_PLUGIN_ROOT}/scripts/stop-guard.sh"` at the end of
 every turn (`hooks/hooks.json::"stop-guard.sh"`) `[verified]`. To test it by
 hand, pipe a Stop-hook JSON into it, as `tests/test_stop_guard.sh::input()` does.
 Set `CLAUDE_CODE_SESSION_ATTENDED=1`, or unset both it and

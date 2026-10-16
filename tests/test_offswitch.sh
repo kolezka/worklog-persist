@@ -22,7 +22,7 @@ check "hook emits when on" "$has_rule" "True"
 # The hook names the resolved KB folder, so the session need not resolve it.
 repo="$XDG_STATE_HOME/repo" && mkdir -p "$repo" && git -C "$repo" init -q
 has_path="$(cd "$repo" && WORKLOG_CONFIG=/nonexistent WORKLOG_WORLD=W bash "$ROOT/scripts/session-start.sh" \
-  | python3 -c "import sys,json;print('\`raqz.pl/W/repo\`' in json.load(sys.stdin)['hookSpecificOutput']['additionalContext'])")"
+  | python3 -c "import sys,json;print('\`Worklog/W/repo\`' in json.load(sys.stdin)['hookSpecificOutput']['additionalContext'])")"
 check "hook names kb_path" "$has_path" "True"
 
 # When the world is unresolved, the hook states the real cause (here: config error).

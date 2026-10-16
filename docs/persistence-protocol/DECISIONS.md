@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: DECISIONS
-verified_against: a3dc179
-verified_on: 2026-09-28
+verified_against: 7d87d3b
+verified_on: 2026-10-16
 ---
 
 # Decisions
@@ -124,6 +124,28 @@ locked in by
 The alternative that lost: keeping a single hardcoded prefix and requiring
 every installation to also register a user- or project-scope `outline` server
 just so the old string would resolve.
+
+## Default collection names stay neutral placeholders; `root_collection` stays optional
+
+[historical: 2026-10-16, this change] `DEFAULT_OUTLINE["root_collection"]` used
+to name one operator's real Outline collection, so a public copy of this plugin
+leaked that operator's KB name to anyone who read the source, and every repo
+that routed through the default (rather than an explicit `outline:` block)
+silently depended on it. The alternative considered: make a missing
+`root_collection` a hard failure (`kb_path` becomes `None` with a loud message
+naming `config_path`), the same way an `UNRESOLVED` world already does. That
+alternative lost: `scripts/session-start.sh` treats a falsy `kb_path` as proof
+the *world* is unresolved and writes "World for project X is unresolved" into
+the reminder; a repo whose world resolves normally but whose `root_collection`
+is simply unset would get that same, now-wrong, message. Fixing that needs a
+third case in a different block's contract
+([`../session-hook/CONTRACTS.md`](../session-hook/CONTRACTS.md)), out of scope
+for a privacy cleanup. The fix taken instead: `DEFAULT_OUTLINE` keeps its
+three-key fallback contract exactly as before; only the values changed to
+neutral placeholders (`"Worklog"` for `root_collection`) that name nothing
+about any real operator. An operator who was relying on the old default must
+now set `outline.root_collection` explicitly; see
+[`README.md`](../../README.md#install).
 
 ## Path root kept, overlay discovery dropped
 

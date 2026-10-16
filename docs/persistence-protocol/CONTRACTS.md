@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: CONTRACTS
-verified_against: a3dc179
-verified_on: 2026-09-28
+verified_against: 7d87d3b
+verified_on: 2026-10-16
 ---
 
 # Contracts
@@ -129,7 +129,12 @@ PyYAML's `safe_load`; without PyYAML the resolver reports
 does not crash [verified]. The shape it reads:
 
 - `outline:` with `root_collection`, `global_collection`, `archive_collection`.
-  A missing key keeps `scripts/resolve_context.py::DEFAULT_OUTLINE` [verified].
+  A missing key keeps `scripts/resolve_context.py::DEFAULT_OUTLINE` [verified],
+  a neutral placeholder (`"Worklog"`, `"Claude's Notebook"`, `"Archive"`), never
+  one operator's real collection name [verified]. An operator who wants their
+  own naming sets `outline.root_collection` (and the other two keys, if wanted)
+  in their config; see [`README.md`](../../README.md#install) for the exact
+  block to add.
 - `worlds:`, a list of `{name, projects}`, where `projects` is a list of
   `{name, repo, kb_folder?}`. `repo` is matched after `~` expansion and symlink
   resolution (`scripts/resolve_context.py::expand()`) [verified].

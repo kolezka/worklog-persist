@@ -25,6 +25,17 @@ fi
 grep -q '${OUTLINE_API_TOKEN}' "$ROOT/.mcp.json" || fail ".mcp.json should use \${OUTLINE_API_TOKEN} placeholder"
 note "ok: credentials are env placeholders only"
 
+# 3b. The server URL is an env placeholder too, never one operator's private endpoint.
+url="$(python3 -c "import json;print(json.load(open('$ROOT/.mcp.json'))['mcpServers']['outline']['url'])")"
+case "$url" in
+  '${'*'}') ;;
+  *) fail ".mcp.json url is not an \${ENV} placeholder: $url" ;;
+esac
+if grep -RqiE 'raqz' "$ROOT/.mcp.json"; then
+  fail "possible hardcoded operator domain in .mcp.json"
+fi
+note "ok: server url is an env placeholder, not a hardcoded endpoint"
+
 # 4. hooks.json uses the plugin (wrapped) shape.
 python3 -c "import json;h=json.load(open('$ROOT/hooks/hooks.json'));assert h['hooks']['SessionStart']" \
   || fail "hooks.json missing wrapped SessionStart"
@@ -49,5 +60,12 @@ skill="${SKILL_FILE:-$ROOT/skills/worklog-persist/SKILL.md}"
 grep -q 'mcp__plugin_worklog-persist_outline__' "$skill" || fail "skill omits the plugin-scoped tool prefix"
 if grep -q 'select:mcp__outline__' "$skill"; then fail "skill hardcodes the user-scope tool prefix"; fi
 note "ok: skill handles both MCP tool prefixes"
+
+# 8. No operator-identifying string anywhere in the tracked tree. The pattern is
+# split across two literals so this line itself never matches its own check.
+private_pattern='ra''qz'
+hits="$(cd "$ROOT" && git grep -liE "$private_pattern" -- . ":(exclude)tests/test_structure.sh" 2>/dev/null || true)"
+[ -z "$hits" ] || fail "operator-identifying string found in: $hits"
+note "ok: no operator-identifying strings in tracked tree"
 
 [ "$fails" = 0 ] && echo "PASS test_structure" || { echo "$fails failure(s)"; exit 1; }

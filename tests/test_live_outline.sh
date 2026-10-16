@@ -11,9 +11,12 @@ if [ "${WORKLOG_PERSIST_LIVE:-}" != 1 ]; then
 fi
 
 : "${OUTLINE_API_TOKEN:?need OUTLINE_API_TOKEN for live test}"
-# Read the endpoint from .mcp.json so this test checks the server the plugin uses.
+: "${OUTLINE_MCP_URL:?need OUTLINE_MCP_URL for live test (the endpoint .mcp.json references)}"
+# Read the endpoint template from .mcp.json and expand it the same way Claude
+# Code does, so this test checks the server the plugin actually uses.
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-mcp_url="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["mcpServers"]["outline"]["url"])' "$ROOT/.mcp.json")"
+mcp_url_template="$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["mcpServers"]["outline"]["url"])' "$ROOT/.mcp.json")"
+mcp_url="$(python3 -c 'import os,sys;print(os.path.expandvars(sys.argv[1]))' "$mcp_url_template")"
 url="${mcp_url%/mcp}"
 code="$(curl -s -o /dev/null -w '%{http_code}' \
   -H "Authorization: Bearer ${OUTLINE_API_TOKEN}" \
