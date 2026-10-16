@@ -1,7 +1,7 @@
 ---
 block: persistence-protocol
 doc: DECISIONS
-verified_against: 3425d99
+verified_against: 7c67f29
 verified_on: 2026-10-16
 ---
 
@@ -38,6 +38,22 @@ every checkpoint would instead create a new document, and `/load` would have no
 single place to read from. The key actually chosen, `project` + `task_slug`
 (`skills/worklog-persist/SKILL.md::"The record identity is"` [verified]),
 survives renames of nothing but the task itself.
+
+## Current state in the record, history in child docs
+
+Up to 0.3.1 every checkpoint added a section to the one record, so a long task's
+record grew to tens of thousands of characters, and because `update_document`
+returns the whole body, each of 25 writes in one session put the full record back
+into context [historical: 2026-10-16, operator report from one long session].
+From 0.3.2 the record is current state only, patched in place, and history goes
+to dated child docs (`skills/worklog-persist/SKILL.md::"Checkpoint history: child documents"`)
+[verified]. This does not reopen the timestamp decision above: the record is
+still found by slug, and a child is only ever reached through its record
+[inferred: children have no identity of their own outside the parent]. The
+alternatives that lost: appending with `editMode: "append"` (the response is
+still the whole body), and one history doc per task (it grows the same way).
+The cost: `/load` sees only the latest 5 checkpoints by link, and reading older
+history takes extra fetches [inferred from the Checkpoints section rule].
 
 ## Redaction is a filter, not a substitute for the rule
 

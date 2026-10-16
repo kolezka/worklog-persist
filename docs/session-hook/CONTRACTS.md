@@ -1,7 +1,7 @@
 ---
 block: session-hook
 doc: CONTRACTS
-verified_against: 3425d99
+verified_against: 7c67f29
 verified_on: 2026-10-16
 ---
 
@@ -179,14 +179,12 @@ enforcement: `tests/test_stop_guard.sh` (test suite only).
 
 ### When it blocks
 
-It blocks when the non-sidechain tool calls after the later of the last Outline
-write and the session marker are substantive: a `git commit`/`push` or
-`gh pr create`, at least `WORKLOG_STOP_MIN_EDITS` `Edit`/`Write`/`NotebookEdit`
-calls (default `scripts/stop_guard.py::DEFAULT_MIN_EDITS`), or at least
-`WORKLOG_STOP_MIN_TOOLS` calls of any kind (default
-`scripts/stop_guard.py::DEFAULT_MIN_TOOLS`)
-(`scripts/stop_guard.py::is_substantive()`) `[verified]`. A single edit is not
-substantive on its own `[verified]`.
+It blocks only when the non-sidechain tool calls after the later of the last
+Outline write and the session marker include a `Bash` command that ships work:
+`git commit`/`push`, `gh pr create`/`merge`, `gh release create`, a package
+publish, or a deploy (`scripts/stop_guard.py::SHIP_RE`,
+`scripts/stop_guard.py::has_shipped()`) `[verified]`. Edits and long runs of
+tool calls never block on their own, however many there are `[verified]`.
 
 It never blocks when `stop_hook_active` is set, when the session is unattended,
 when persistence is off, for an ignored repo, inside the cooldown, or when it
@@ -216,13 +214,18 @@ cannot record the block (`scripts/stop_guard.py::run()`) `[verified]`:
   not record would repeat on every later stop `[inferred]` from
   `scripts/stop_guard.py::marker_index()` finding nothing.
 
-A non-integer value in any of the three variables falls back to its default
+A non-integer `WORKLOG_STOP_COOLDOWN_MIN` falls back to its default
 (`scripts/stop_guard.py::env_int()`) `[verified]`.
 
 enforcement: `tests/test_stop_guard.sh::"one edit: silent"`,
-  `tests/test_stop_guard.sh::"edits at min-edits: decision"`,
-  `tests/test_stop_guard.sh::"min-edits override: silent"`,
+  `tests/test_stop_guard.sh::"edits only: silent"`,
+  `tests/test_stop_guard.sh::"long read-only run: silent"`,
   `tests/test_stop_guard.sh::"commit: decision"`,
+  `tests/test_stop_guard.sh::"push: decision"`,
+  `tests/test_stop_guard.sh::"pr create: decision"`,
+  `tests/test_stop_guard.sh::"pr merge: decision"`,
+  `tests/test_stop_guard.sh::"cooldown: default is 90 minutes, not 30"`,
+  `tests/test_stop_guard.sh::"cooldown: env override shortens it"`,
   `tests/test_stop_guard.sh::"cooldown: new work inside cooldown is silent"`,
   `tests/test_stop_guard.sh::"cooldown: new work after cooldown blocks"`,
   `tests/test_stop_guard.sh::"cooldown: work 5 min after a write is silent"`,

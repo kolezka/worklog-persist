@@ -1,7 +1,7 @@
 ---
 block: verification
 doc: GAPS
-verified_against: 3425d99
+verified_against: 7c67f29
 verified_on: 2026-10-16
 ---
 

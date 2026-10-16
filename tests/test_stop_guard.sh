@@ -63,6 +63,10 @@ edit_line() {
 commit_line() {
   printf '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"%s","name":"Bash","input":{"command":"git commit -m x"}}]}}\n' "$1"
 }
+# One Bash tool_use with id $1 running command $2 (no quotes or backslashes in $2).
+bash_line() {
+  printf '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"%s","name":"Bash","input":{"command":"%s"}}]}}\n' "$1" "$2"
+}
 # $1 Edit lines, with ids <$2>-1 .. <$2>-$1.
 edits() {
   local i
@@ -103,27 +107,36 @@ EOF
 t_edit_no_write="$tmp/edit_no_write.jsonl"
 edit_line "tu-one" > "$t_edit_no_write"
 
-# Fixtures: one edit short of the default WORKLOG_STOP_MIN_EDITS (5), and exactly at it.
-t_edits4="$tmp/edits4.jsonl"
-edits 4 e4 > "$t_edits4"
-t_edits5="$tmp/edits5.jsonl"
-edits 5 e5 > "$t_edits5"
+# Fixture: a long run of edits with no commit, push, PR or release.
+t_edits_many="$tmp/edits_many.jsonl"
+edits 40 em > "$t_edits_many"
+
+# Fixture: a long read-only run, including Bash commands that only read.
+t_reads_many="$tmp/reads_many.jsonl"
+{
+  for i in $(seq 1 60); do
+    printf '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"rd-%s","name":"Read","input":{}}]}}\n' "$i"
+  done
+  bash_line "rd-log" "git log --oneline -5"
+  bash_line "rd-status" "git status"
+  bash_line "rd-prview" "gh pr view 12"
+} > "$t_reads_many"
 
 # Fixture: a commit, no Outline write ever.
 t_commit="$tmp/commit.jsonl"
 commit_line "tu-commit" > "$t_commit"
 
-# Fixture: enough edits to block, then a user-scope Outline update_document.
+# Fixture: a commit, then a user-scope Outline update_document.
 t_edit_then_write="$tmp/edit_then_write.jsonl"
-{ edits 5 ew; printf '%s\n' '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"mcp__outline__update_document","input":{}}]}}'; } > "$t_edit_then_write"
+{ edits 5 ew; commit_line "ew-commit"; printf '%s\n' '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"mcp__outline__update_document","input":{}}]}}'; } > "$t_edit_then_write"
 
 # Fixture: the same blocking work, but done on subagent (sidechain) transcript lines.
 t_sidechain="$tmp/sidechain.jsonl"
 { edits 5 sc; commit_line "sc-commit"; } | sed 's/"type":"assistant"/"type":"assistant","isSidechain":true/' > "$t_sidechain"
 
-# Fixture: enough edits to block, then a plugin-scoped Outline write (not the bare mcp__outline__ prefix).
+# Fixture: a commit, then a plugin-scoped Outline write (not the bare mcp__outline__ prefix).
 t_plugin_write="$tmp/plugin_write.jsonl"
-{ edits 5 pw; printf '%s\n' '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"mcp__plugin_worklog-persist_outline__create_document","input":{}}]}}'; } > "$t_plugin_write"
+{ edits 5 pw; commit_line "pw-commit"; printf '%s\n' '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"mcp__plugin_worklog-persist_outline__create_document","input":{}}]}}'; } > "$t_plugin_write"
 
 # Fixture: unparsable content, must never crash the hook.
 t_garbage="$tmp/garbage.jsonl"
@@ -145,17 +158,30 @@ check "no work: silent" "$out" ""
 out="$(run_guard "$t_edit_no_write" false "case2")"
 check "one edit: silent" "$out" ""
 
-# Case 2a: one edit below the default WORKLOG_STOP_MIN_EDITS -> allow.
-out="$(run_guard "$t_edits4" false "case2a")"
-check "edits below min-edits: silent" "$out" ""
+# Case 2a: edits alone never block, however many there are.
+out="$(run_guard "$t_edits_many" false "case2a")"
+check "edits only: silent" "$out" ""
 
-# Case 2b: exactly WORKLOG_STOP_MIN_EDITS edits -> block.
-out="$(run_guard "$t_edits5" false "case2b")"
-check "edits at min-edits: decision" "$(printf '%s' "$out" | decision)" "block"
+# Case 2b: a long read-only run never blocks, read-only git/gh commands included.
+out="$(run_guard "$t_reads_many" false "case2b")"
+check "long read-only run: silent" "$out" ""
 
-# Case 2c: WORKLOG_STOP_MIN_EDITS raises the bar above the same five edits -> allow.
-out="$(WORKLOG_STOP_MIN_EDITS=6 run_guard "$t_edits5" false "case2c")"
-check "min-edits override: silent" "$out" ""
+# Case 2c: the old edit/tool-count knobs no longer force a block.
+out="$(WORKLOG_STOP_MIN_EDITS=1 WORKLOG_STOP_MIN_TOOLS=1 run_guard "$t_edits_many" false "case2c")"
+check "legacy count knobs: silent" "$out" ""
+
+# Case 2e: each shipping command blocks on its own, after edits or not.
+ship_case() {
+  local name="$1" cmd="$2" f="$tmp/ship_$3.jsonl"
+  { edits 2 "sh$3"; bash_line "sh$3-cmd" "$cmd"; } > "$f"
+  check "$name" "$(run_guard "$f" false "ship-$3" | decision)" "block"
+}
+ship_case "push: decision" "git push -u origin feat/x" push
+ship_case "pr create: decision" "gh pr create --title x --body y" prc
+ship_case "pr merge: decision" "gh pr merge 12 --squash" prm
+ship_case "release: decision" "gh release create v1.2.3" rel
+ship_case "publish: decision" "pnpm publish --access public" pub
+ship_case "deploy: decision" "fly deploy" dep
 
 # Case 2d: a commit blocks on its own, with no edits at all.
 out="$(run_guard "$t_commit" false "case2d")"
@@ -191,20 +217,6 @@ out="$(run_guard "$t_garbage" false "case8")"
 check "garbage transcript: silent" "$out" ""
 rc=0; run_guard "$t_garbage" false "case8" >/dev/null 2>&1 || rc=$?
 check "garbage transcript: exit 0" "$rc" "0"
-
-# Case 9: WORKLOG_STOP_MIN_TOOLS makes a long run of small tool calls substantive
-# even with no Edit/Write/Bash among them. The two sub-cases use different
-# session ids so the first one's block-and-record does not clear the slate for
-# the second, which needs the full 5 tool_uses to test the threshold itself.
-t_many="$tmp/many.jsonl"
-: > "$t_many"
-for i in $(seq 1 5); do
-  printf '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"r-%s","name":"Read","input":{}}]}}\n' "$i" >> "$t_many"
-done
-out="$(WORKLOG_STOP_MIN_TOOLS=5 run_guard "$t_many" false "case9-block")"
-check "min-tools threshold: decision" "$(printf '%s' "$out" | decision)" "block"
-out="$(run_guard "$t_many" false "case9-below")"
-check "below default threshold: silent" "$out" ""
 
 # The marker cases below re-stop the same session back to back, so they turn the
 # cooldown off (WORKLOG_STOP_COOLDOWN_MIN=0) to test the marker on its own.
@@ -246,7 +258,7 @@ commit_line "tu-z" > "$t_missing_b"
 out="$(WORKLOG_STOP_COOLDOWN_MIN=0 run_guard "$t_missing_b" false "sess-c")"
 check "marker: id missing from transcript falls back and blocks" "$(printf '%s' "$out" | decision)" "block"
 
-# Case 14: a second substantive stop inside the default cooldown (30 min) after a
+# Case 14: a second shipping stop inside the default cooldown (90 min) after a
 # block is allowed; once the last block is older than that, it blocks again.
 t_cool="$tmp/cooldown.jsonl"
 commit_line "tu-c1" > "$t_cool"
@@ -257,7 +269,19 @@ out="$(run_guard "$t_cool" false "sess-cool")"
 check "cooldown: new work inside cooldown is silent" "$out" ""
 age_marker "sess-cool" 31
 out="$(run_guard "$t_cool" false "sess-cool")"
+check "cooldown: default is 90 minutes, not 30" "$out" ""
+age_marker "sess-cool" 91
+out="$(run_guard "$t_cool" false "sess-cool")"
 check "cooldown: new work after cooldown blocks" "$(printf '%s' "$out" | decision)" "block"
+
+# Case 14b: WORKLOG_STOP_COOLDOWN_MIN still overrides the default.
+t_cool_env="$tmp/cooldown_env.jsonl"
+commit_line "tu-ce1" > "$t_cool_env"
+run_guard "$t_cool_env" false "sess-cool-env" >/dev/null
+commit_line "tu-ce2" >> "$t_cool_env"
+age_marker "sess-cool-env" 31
+out="$(WORKLOG_STOP_COOLDOWN_MIN=30 run_guard "$t_cool_env" false "sess-cool-env")"
+check "cooldown: env override shortens it" "$(printf '%s' "$out" | decision)" "block"
 
 # Case 15: an Outline write starts the same cooldown as a block does.
 t_recent_write="$tmp/recent_write.jsonl"
@@ -266,8 +290,11 @@ out="$(run_guard "$t_recent_write" false "case15-recent")"
 check "cooldown: work 5 min after a write is silent" "$out" ""
 t_old_write="$tmp/old_write.jsonl"
 { write_line 40; commit_line "tu-ow"; } > "$t_old_write"
+out="$(run_guard "$t_old_write" false "case15-mid")"
+check "cooldown: work 40 min after a write is silent" "$out" ""
+{ write_line 100; commit_line "tu-ow"; } > "$t_old_write"
 out="$(run_guard "$t_old_write" false "case15-old")"
-check "cooldown: work 40 min after a write blocks" "$(printf '%s' "$out" | decision)" "block"
+check "cooldown: work 100 min after a write blocks" "$(printf '%s' "$out" | decision)" "block"
 # A write stamped ahead of the clock must not mute the guard until then.
 t_future_write="$tmp/future_write.jsonl"
 { write_line -60; commit_line "tu-fw"; } > "$t_future_write"
@@ -295,25 +322,36 @@ check "unrecordable: no tool_use id is silent" "$out" ""
 out="$(XDG_STATE_HOME="$tmp/state-is-a-file" run_guard "$t_commit" false "case17-unwritable")"
 check "unrecordable: unwritable state dir is silent" "$out" ""
 
-# COMMIT_RE unit cases: a git subcommand behind -C/-c global options is still
-# caught, a lookalike subcommand (commit-tree) is not, and gh pr create counts.
+# SHIP_RE unit cases: a git subcommand behind -C/-c global options is still
+# caught, a lookalike subcommand (commit-tree) is not, and PR, release, publish
+# and deploy commands count while read-only lookalikes do not.
 commit_re() {
   python3 -c "
 import sys
 sys.path.insert(0, '$ROOT/scripts')
 import stop_guard as m
-print(bool(m.COMMIT_RE.search(sys.argv[1])))
+print(bool(m.SHIP_RE.search(sys.argv[1])))
 " "$1"
 }
-check "COMMIT_RE: plain commit" "$(commit_re 'git commit -m x')" "True"
-check "COMMIT_RE: plain push" "$(commit_re 'git push origin main')" "True"
-check "COMMIT_RE: -C option before commit" "$(commit_re 'git -C /repo commit -m x')" "True"
-check "COMMIT_RE: -c option before commit" "$(commit_re 'git -c user.email=a@b commit')" "True"
-check "COMMIT_RE: commit-tree is not commit" "$(commit_re 'git commit-tree -m x')" "False"
-check "COMMIT_RE: unrelated git command" "$(commit_re 'git checkout -- file')" "False"
-check "COMMIT_RE: gh pr create" "$(commit_re 'gh pr create --title x')" "True"
-check "COMMIT_RE: chained -C and -c before push" \
+check "SHIP_RE: plain commit" "$(commit_re 'git commit -m x')" "True"
+check "SHIP_RE: plain push" "$(commit_re 'git push origin main')" "True"
+check "SHIP_RE: -C option before commit" "$(commit_re 'git -C /repo commit -m x')" "True"
+check "SHIP_RE: -c option before commit" "$(commit_re 'git -c user.email=a@b commit')" "True"
+check "SHIP_RE: commit-tree is not commit" "$(commit_re 'git commit-tree -m x')" "False"
+check "SHIP_RE: unrelated git command" "$(commit_re 'git checkout -- file')" "False"
+check "SHIP_RE: gh pr create" "$(commit_re 'gh pr create --title x')" "True"
+check "SHIP_RE: chained -C and -c before push" \
   "$(commit_re 'git -C /repo -c user.name=a push')" "True"
+check "SHIP_RE: gh pr merge" "$(commit_re 'gh pr merge 3 --squash')" "True"
+check "SHIP_RE: gh pr view is not shipping" "$(commit_re 'gh pr view 3')" "False"
+check "SHIP_RE: gh release create" "$(commit_re 'gh release create v1')" "True"
+check "SHIP_RE: npm publish" "$(commit_re 'npm publish')" "True"
+check "SHIP_RE: uv publish" "$(commit_re 'uv publish')" "True"
+check "SHIP_RE: make release" "$(commit_re 'make release')" "True"
+check "SHIP_RE: deploy script" "$(commit_re './scripts/deploy.sh prod')" "True"
+check "SHIP_RE: vercel deploy" "$(commit_re 'vercel deploy --prod')" "True"
+check "SHIP_RE: searching for the word deploy" "$(commit_re 'rg -n deploy docs')" "False"
+check "SHIP_RE: git log" "$(commit_re 'git log --oneline')" "False"
 
 # Case: resolve-context.sh failing outright (not just returning UNRESOLVED) still
 # blocks, with a generic reason that makes no world claim. Uses a copy of scripts/

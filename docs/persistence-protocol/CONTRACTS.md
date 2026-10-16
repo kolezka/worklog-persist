@@ -1,7 +1,7 @@
 ---
 block: persistence-protocol
 doc: CONTRACTS
-verified_against: 3425d99
+verified_against: 7c67f29
 verified_on: 2026-10-16
 ---
 
@@ -286,6 +286,27 @@ enforcement: convention. No test drives a real or mocked `list_documents` /
 `tests/test_context.sh` cover the two helper scripts, not the Outline calls
 the skill text describes. See [`../verification/README.md`](../verification/README.md)
 for what the test suite as a whole proves.
+
+---
+
+## Record layout: current state in the record, history in child docs
+
+The record at `record_path` holds current state only, in fixed `##` sections
+(Objective, Status, Decisions, Verified facts, Blockers, Next action,
+Checkpoints, Related), and stays under about 4,000 characters
+(`skills/worklog-persist/SKILL.md::"**current state only**"`) [verified]. Each
+checkpoint, handoff or completion creates one child document of the record,
+titled `<YYYY-MM-DD> <short title>`, with a back-link to the record
+(`skills/worklog-persist/SKILL.md::"Checkpoint history: child documents"`)
+[verified]. The record is updated with `editMode: "patch"` of the changed
+sections, and a write is checked from the write response, not by fetching again
+(`skills/worklog-persist/SKILL.md::"Writing cheaply"`,
+`commands/checkpoint.md::"which already holds the new body"`)
+[verified]. A retried checkpoint with the same title updates the existing child
+(`skills/worklog-persist/SKILL.md::"update that child"`) [verified].
+
+enforcement: convention. Nothing measures the record size or rejects an appended
+history section; the rule is prompt text only.
 
 ---
 

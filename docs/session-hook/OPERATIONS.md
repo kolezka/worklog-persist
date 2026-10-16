@@ -1,7 +1,7 @@
 ---
 block: session-hook
 doc: OPERATIONS
-verified_against: 3425d99
+verified_against: 7c67f29
 verified_on: 2026-10-16
 ---
 
@@ -30,19 +30,18 @@ started from an interactive Claude Code session already has `1`; what a shell
 started from `claude -p` gets was not checked
 `[historical: 2026-10-01, Bash tool environment in an interactive Claude Code 2.1.286 session]`.
 
-Three environment variables set how often it fires. `scripts/stop_guard.py::run()`
-reads them on every stop `[verified]`:
+One environment variable sets how often it fires. `scripts/stop_guard.py::run()`
+reads it on every stop `[verified]`:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `WORKLOG_STOP_MIN_EDITS` | `scripts/stop_guard.py::DEFAULT_MIN_EDITS` | Edit calls since the last write that count as substantive |
-| `WORKLOG_STOP_MIN_TOOLS` | `scripts/stop_guard.py::DEFAULT_MIN_TOOLS` | Tool calls of any kind that count as substantive |
-| `WORKLOG_STOP_COOLDOWN_MIN` | `scripts/stop_guard.py::DEFAULT_COOLDOWN_MIN` | Minutes with no block after a block or an Outline write. `0` turns it off |
+| `WORKLOG_STOP_COOLDOWN_MIN` | `scripts/stop_guard.py::DEFAULT_COOLDOWN_MIN` (90) | Minutes with no block after a block or an Outline write. `0` turns it off |
 
-A commit, push or `gh pr create` is substantive whatever these say
-(`scripts/stop_guard.py::COMMIT_RE`) `[verified]`. The hook inherits the
-environment of the Claude Code process, so set them where Claude Code is
-launched `[historical: 2026-10-01, scratch-config Stop-hook probe on Claude Code 2.1.286]`.
+Only a command that ships work can trigger a block: a commit, push, `gh pr
+create`/`merge`, release, publish or deploy (`scripts/stop_guard.py::SHIP_RE`)
+`[verified]`. `WORKLOG_STOP_MIN_EDITS` and `WORKLOG_STOP_MIN_TOOLS` were removed
+in 0.3.2 and are ignored `[verified]`. The hook inherits the environment of the
+Claude Code process, so set the variable where Claude Code is launched `[historical: 2026-10-01, scratch-config Stop-hook probe on Claude Code 2.1.286]`.
 Its per-session markers live under
 `scripts/stop_guard.py::state_stop_dir()`, which resolves `XDG_STATE_HOME`, else
 `$HOME/.local/state`, then `worklog-persist/stop` `[verified]`.
@@ -133,11 +132,12 @@ rule on its own, since it is the primary driver
 (`scripts/session-start.sh::"best-effort"`) `[verified]`.
 
 **The Stop guard does not fire after work you expected it to catch.**
-Usually expected. Below the thresholds, inside the cooldown, or in an
-unattended session it allows the stop on purpose
+Usually expected. With no commit, push, PR, release or deploy since the last
+write, inside the cooldown, or in an unattended session it allows the stop on
+purpose
 (`scripts/stop_guard.py::run()`) `[verified]`. It also stays silent when it
 cannot write its marker under `scripts/stop_guard.py::state_stop_dir()`
-`[verified]`, so check that folder is writable. Check the three variables in the
+`[verified]`, so check that folder is writable. Check the variable in the
 table above, then pipe the session's Stop-hook JSON into
 `scripts/stop-guard.sh` by hand with the same environment. Do not delete the
 session marker to force a block; set `WORKLOG_STOP_COOLDOWN_MIN=0` for that run

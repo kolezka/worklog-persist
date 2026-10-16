@@ -8,7 +8,7 @@ Run the worklog-persist skill's **start** step.
 1. Availability check; resolve identity via `scripts/resolve-context.sh <slug>` (run `/setup` first if world is `UNRESOLVED`; ask once if the repo is `ignored` or the slug is unclear).
 2. Bootstrap if `kb_path` or its children are missing: world folder gets `INDEX` only, project folder gets `INDEX`, `Specs`, `Plans`, `Tasks`. Check each before creating it.
 3. `list_documents` in `tasks_path` and match the task slug — **prefer updating the existing record over creating a duplicate** (idempotency key = project + task slug).
-4. Compose the record body with: objective, acceptance criteria, repo, worktree, branch, status `active`, timestamp `Last updated: YYYY-MM-DD`, and a `## Related` section linking the Spec/Plan and related docs.
+4. Compose the record body in the skill's record layout (current state only, under about 4,000 characters): repo, worktree, branch, `Last updated: YYYY-MM-DD`, then `## Objective` (with acceptance criteria), `## Status` (`active`), `## Decisions`, `## Verified facts`, `## Blockers`, `## Next action`, `## Checkpoints`, and `## Related` linking the Spec/Plan and related docs. For an existing record, patch only the sections that change (`editMode: "patch"`).
 5. Pipe the body through `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/redact.py` before writing.
 6. `create_document` (title `<task-slug>`, no leading H1, parent `tasks_path`) or `update_document`. Then add the record to the `Tasks` parent child-list with flag `doing`.
 

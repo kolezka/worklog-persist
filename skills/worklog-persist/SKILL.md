@@ -103,7 +103,8 @@ Names in angle brackets come from the resolver.
     <project>/                     = kb_path
       INDEX                        project hub
       Specs/  Plans/  Tasks/       parents with child lists
-      Tasks/<slug>                 = record_path, one per work item
+      Tasks/<slug>                 = record_path, one per work item, current state only
+        <YYYY-MM-DD> <short title> checkpoint history, one child doc per checkpoint
       Tasks/BACKLOG                trivial items, until they grow up
       Packages/<pkg>/              monorepo sub-packages only
     status-reports/  analizy/      per-world, not project work
@@ -172,17 +173,58 @@ anywhere, and the session works without persistence.
 
 ## The persisted work record
 
-Persist structured state, not a transcript. Minimum fields:
+Persist structured state, not a transcript. The record at `record_path` holds
+**current state only** and stays under about 4,000 characters. History never goes
+into it. Its body has these sections, in this order, each a `##` heading:
 
-- repository identity; project and world; branch and worktree;
-- task slug; objective; acceptance criteria;
-- status: one of `active`, `blocked`, `handoff`, `complete`;
-- verified facts and evidence; inferred or unverified items; decisions;
-- changed files; test and verification results; blockers; next action;
-- related Outline documents; timestamp (`Last updated: YYYY-MM-DD`).
+```
+Repo: <project> (<world>), branch <branch>, worktree <worktree>
+Last updated: YYYY-MM-DD
 
-Distinguish **verified / inferred / unverified / blocked** claims explicitly — never
+## Objective          objective and acceptance criteria
+## Status             one of active, blocked, handoff, complete
+## Decisions          current decisions, one line each
+## Verified facts     with evidence; inferred or unverified items labelled as such
+## Blockers           or "None"
+## Next action        one concrete step
+## Checkpoints        links to the latest 5 checkpoint docs, newest first
+## Related            [[doc-title]] links to Spec, Plan and other docs
+```
+
+Each section is a summary that is **rewritten**, not grown. When a fact, decision
+or blocker is superseded, replace it; the old wording lives in the checkpoint
+history. Changed files, test output and step-by-step evidence belong in the
+checkpoint doc, not in the record.
+
+Distinguish **verified / inferred / unverified / blocked** claims explicitly. Never
 present an unverified claim as verified.
+
+### Checkpoint history: child documents
+
+Each checkpoint, handoff or completion writes one short child document under the
+record: `create_document` with `parentDocumentId` = the record's id and title
+`<YYYY-MM-DD> <short title>` (for example `2026-10-16 stop guard tests green`).
+Its body holds what happened at that point: changed files, commands run and their
+decoded outcomes, decisions taken, and a back-link `Record: [[<slug>]]`. Keep it
+short; it is a log entry, not a second record. Never append checkpoint text to the
+record itself.
+
+### Writing cheaply
+
+`update_document` returns the whole document, so every write re-reads the body
+into the session. Keep it small:
+
+- Update the record with `editMode: "patch"`: `findText` is the exact current
+  text of one state section (from the heading to the next heading), `text` is its
+  new version. Patch only the sections that changed (usually Status, Next action,
+  Checkpoints). Use `replace` only when creating the body or repairing a record
+  whose sections no longer match the layout above, and then trim it under the size
+  limit in the same write.
+- The write response already contains the updated body. Check the change there.
+  Do not `fetch` the record again just to verify a write you already have a
+  response for.
+- Keep the last body you read or wrote in mind and patch from it; `fetch` again
+  only when another session may have changed the record since.
 
 ## Idempotency
 
@@ -190,6 +232,11 @@ The record identity is `project` + `task_slug`, realised as the doc at
 `record_path`. Before creating, `list_documents` under `tasks_path` and match the
 title to the slug. If it exists, `update_document` it. A repeated checkpoint updates
 the same record and never duplicates. Never use a timestamp as document identity.
+
+A checkpoint doc is history, not identity: it is always found through its parent
+record. Before creating one, list the record's children; if a child with the same
+`<YYYY-MM-DD> <short title>` already exists (a retried write), update that child
+instead of creating a second one.
 
 ## Status and the `Tasks` parent
 
@@ -207,37 +254,43 @@ change updates that flag. If the parent is missing, report the record as orphane
 
 ## Lifecycle (maps to the commands)
 
-- **load** — resolve identity; find the record at `record_path`; read it plus the
+- **load**: resolve identity; find the record at `record_path`; read it plus the
   project `INDEX` and linked docs before substantive work; return a concise
-  current-state summary. If Outline is unavailable, say persistence is unavailable
-  and stop the load.
-- **start** — bootstrap if needed; create or update `record_path` with objective, acceptance criteria,
+  current-state summary. Read checkpoint child docs only when the record's state
+  is not enough. If Outline is unavailable, say persistence is unavailable and
+  stop the load.
+- **start**: bootstrap if needed; create or update `record_path` with objective, acceptance criteria,
   repo, worktree, branch; link related Specs/Plans/existing docs. Update the `Tasks`
   parent child-list.
-- **checkpoint** — after a meaningful *verified* milestone, `update_document` the same
-  record: changed files, evidence, tests, decisions, blockers, next action, new
-  timestamp. Never a new doc.
-- **handoff** — write a compact handoff state when the session ends, is blocked or is
-  transferred; status `handoff` or `blocked`; label verified / inferred / unverified /
-  blocked.
-- **complete** — record the real completion result with verification commands and
-  their outcomes; status `complete`; strikethrough closed items, do not delete. Do not
-  mark complete merely because files changed.
-- **dry-run** — show the intended read or write (target collection/folder/doc, the
+- **checkpoint**: after a meaningful *verified* milestone, create one checkpoint
+  child doc (changed files, evidence, tests), then patch the same record's state
+  sections: Status, Decisions, Verified facts, Blockers, Next action, Checkpoints,
+  `Last updated:`. Never a new record, never appended history.
+- **handoff**: write a compact handoff state when the session ends, is blocked or is
+  transferred: a checkpoint child doc with what is done and what remains, and a
+  patch of the record's state sections; status `handoff` or `blocked`; label
+  verified / inferred / unverified / blocked.
+- **complete**: record the real completion result: verification commands and
+  their outcomes go in a final checkpoint child doc; the record's Status becomes
+  `complete` and Next action `None`. Closed items move out of the record into that
+  child doc rather than being deleted. Do not mark complete merely because files
+  changed.
+- **dry-run**: show the intended read or write (target collection/folder/doc, the
   fields, the redacted body) without calling any write tool.
-- **off** — `bash ${CLAUDE_PLUGIN_ROOT}/scripts/persistence-state.sh off` disables the
+- **off**: `bash ${CLAUDE_PLUGIN_ROOT}/scripts/persistence-state.sh off` disables the
   automatic SessionStart rule and the Stop guard below without removing the plugin;
   `... on` re-enables both.
-- **setup** — run Onboarding (above) for the current repo.
+- **setup**: run Onboarding (above) for the current repo.
 
-A `Stop` hook (`scripts/stop-guard.sh`) also runs when a turn ends. If substantive
-work (a commit/push/PR, several edits, or a long run of tool calls) happened since
-the last Outline write in the transcript, it blocks the stop once and asks the model
-to run this skill (checkpoint, handoff or complete) before finishing. For an
+A `Stop` hook (`scripts/stop-guard.sh`) also runs when a turn ends. If work was
+shipped (a git commit or push, `gh pr create` or `merge`, a release, publish or
+deploy) since the last Outline write in the transcript, it blocks the stop once and
+asks the model to run this skill (checkpoint, handoff or complete) before finishing. For an
 unresolved repo it asks for Onboarding (`/setup`) first. It never blocks twice in a
 row, it never blocks for an ignored repo, and it never fires when persistence is off
 or in a non-interactive run (`claude -p`, SDK). After a block or an Outline write it
-stays quiet for a cooldown (30 minutes by default). A decline ("trivial, stopping")
+stays quiet for a cooldown (90 minutes by default, `WORKLOG_STOP_COOLDOWN_MIN`).
+Edits alone and long read-only runs never trigger it. A decline ("trivial, stopping")
 is remembered per session, so the same already-shown work is not blocked again on
 the next turn; only new work after the decline triggers another block.
 
