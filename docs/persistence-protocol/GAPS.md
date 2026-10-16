@@ -1,7 +1,7 @@
 ---
 block: persistence-protocol
 doc: GAPS
-verified_against: 7d87d3b
+verified_against: 3425d99
 verified_on: 2026-10-16
 ---
 

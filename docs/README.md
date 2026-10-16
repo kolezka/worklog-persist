@@ -1,7 +1,7 @@
 ---
 block: _root
 doc: README
-verified_against: 7d87d3b
+verified_against: 3425d99
 verified_on: 2026-10-16
 unassigned: [README.md, AGENTS.md, .claude/, .ai/, .gitkeep, .gitattributes, .repo-intel.json, docs/]
 ---
