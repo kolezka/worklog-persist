@@ -207,4 +207,10 @@ check "equal-depth tie is ambiguous" "$(cd "$tie/shared/proj/sub" && WORKLOG_CON
 mkdir -p "$tmp/not-a-repo"
 check "non-git project workspace" "$(cd "$tmp/not-a-repo" && WORKLOG_CONFIG="$tmp/none.yaml" bash "$SCRIPT" | field project)" "workspace"
 
+# The root collection says whether a config named it; only the default must never be created.
+check "root from default without config" "$(cd "$tmp/myproj" && WORKLOG_CONFIG="$tmp/none.yaml" bash "$SCRIPT" | field root_collection_source)" "default"
+check "root from config" "$(cd "$tmp/myproj" && WORKLOG_CONFIG="$tmp/config.yaml" bash "$SCRIPT" | field root_collection_source)" "config"
+printf 'worlds:\n  - name: Alpha\n    projects:\n      - {name: p, repo: %s}\n' "$tmp/myproj" > "$tmp/no-outline.yaml"
+check "config without outline block uses default root" "$(cd "$tmp/myproj" && WORKLOG_CONFIG="$tmp/no-outline.yaml" bash "$SCRIPT" | field root_collection_source)" "default"
+
 [ "$fails" = 0 ] && echo "PASS test_context" || { echo "$fails failure(s)"; exit 1; }

@@ -7,8 +7,8 @@ Run the worklog-persist skill's **handoff** step.
 
 1. Availability check; resolve identity; locate the existing record at `record_path` (update it, do not duplicate). If the record, its folder or the collection is missing, run **start** first (it bootstraps them); never skip the write.
 2. Create one checkpoint child doc under the record (title `<YYYY-MM-DD> handoff`, or `<YYYY-MM-DD> blocked`): what is done, what remains, open questions, and a back-link `Record: [[<slug>]]`.
-3. Patch the record's state sections with `editMode: "patch"`: Status (`handoff` or `blocked`), Blockers, Next action (the exact next step), Checkpoints, `Last updated:`. Keep it current state only, under about 4,000 characters.
+3. Patch the record's state sections with `editMode: "patch"`: Status (`handoff` or `blocked`), Blockers, Next action (the exact next step), Checkpoints, `Last updated:`. Keep it current state only, under about 4,000 characters; a record already over that is compacted first (skill: "Compacting an oversized record"), never left oversized.
 4. Clearly separate **verified**, **inferred**, **unverified** and **blocked** claims so the next session can trust the record.
-5. Redact via `scripts/redact.py`; set the `Tasks` parent flag (`handoff` maps to `doing`, `blocked` to `blocked`).
+5. Redact via `scripts/redact.py`; patch the record's line in the `Tasks` parent body, `* **<task-slug>** (<flag>, <YYYY-MM-DD>): …` (`handoff` maps to `doing`, `blocked` to `blocked`).
 
 Report the write only after the Outline response confirms it. The response already holds the body; do not `fetch` again to verify.

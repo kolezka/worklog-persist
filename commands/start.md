@@ -10,6 +10,6 @@ Run the worklog-persist skill's **start** step.
 3. `list_documents` in `tasks_path` and match the task slug — **prefer updating the existing record over creating a duplicate** (idempotency key = project + task slug).
 4. Compose the record body in the skill's record layout (current state only, under about 4,000 characters): repo, worktree, branch, `Last updated: YYYY-MM-DD`, then `## Objective` (with acceptance criteria), `## Status` (`active`), `## Decisions`, `## Verified facts`, `## Blockers`, `## Next action`, `## Checkpoints`, and `## Related` linking the Spec/Plan and related docs. For an existing record, patch only the sections that change (`editMode: "patch"`).
 5. Pipe the body through `python3 ${CLAUDE_PLUGIN_ROOT}/scripts/redact.py` before writing.
-6. `create_document` (title `<task-slug>`, no leading H1, parent `tasks_path`) or `update_document`. Then add the record to the `Tasks` parent child-list with flag `doing`.
+6. `create_document` (title `<task-slug>`, no leading H1, parent `tasks_path`) or `update_document`. Then add the record's line in the `Tasks` parent body, `* **<task-slug>** (doing, <YYYY-MM-DD>): <one-line summary>` (see the skill's "Status and the `Tasks` parent").
 
 Never write secrets. Do not claim success unless the Outline response confirms the write.
