@@ -68,4 +68,15 @@ hits="$(cd "$ROOT" && git grep -liE "$private_pattern" -- . ":(exclude)tests/tes
 [ -z "$hits" ] || fail "operator-identifying string found in: $hits"
 note "ok: no operator-identifying strings in tracked tree"
 
+# 9. A missing Outline target is created on write, never skipped. Bootstrap
+# names create_collection for the root collection, and each write command
+# repairs a missing record or folder instead of dropping the write.
+grep -q 'create_collection' "$skill" || fail "skill never creates a missing root collection"
+grep -q 'Never skip a write because a target is missing' "$skill" \
+  || fail "skill does not forbid skipping a write over a missing target"
+for c in start checkpoint handoff complete; do
+  grep -q 'never skip the write' "$ROOT/commands/$c.md" || fail "commands/$c.md may skip a write over a missing target"
+done
+note "ok: missing Outline targets are created, not skipped"
+
 [ "$fails" = 0 ] && echo "PASS test_structure" || { echo "$fails failure(s)"; exit 1; }

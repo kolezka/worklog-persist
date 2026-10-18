@@ -32,8 +32,8 @@ skill (test suite only).
 
 ## MCP tool discovery: two possible prefixes, never assumed
 
-The Outline tools are `list_collections`, `list_documents`, `fetch`,
-`create_document`, `update_document`, `move_document`
+The Outline tools are `list_collections`, `create_collection`, `list_documents`,
+`fetch`, `create_document`, `update_document`, `move_document`
 (`skills/worklog-persist/SKILL.md::"Their prefix depends on"`)
 [verified]. Their prefix is `mcp__outline__*` when a user, project or local scope
 also configures an `outline` server, or
