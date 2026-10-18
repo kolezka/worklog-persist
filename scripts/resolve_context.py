@@ -175,6 +175,9 @@ def main(argv):
     if config:
         outline.update({k: v for k, v in (config.get("outline") or {}).items()
                         if k in DEFAULT_OUTLINE and v})
+    # A default root names no real collection, so bootstrap must ask instead of creating it.
+    root_source = "config" if outline["root_collection"] != DEFAULT_OUTLINE["root_collection"] \
+        or ((config or {}).get("outline") or {}).get("root_collection") else "default"
 
     # Outside git the directory name says nothing stable about the work.
     world, project, kb_folder, source = None, repo if is_git else "workspace", None, "fallback"
@@ -210,6 +213,7 @@ def main(argv):
         "worktree": str(worktree),
         "task_slug": slug,
         "root_collection": root,
+        "root_collection_source": root_source,
         "global_collection": outline["global_collection"],
         "archive_collection": outline["archive_collection"],
         "kb_path": kb_path,

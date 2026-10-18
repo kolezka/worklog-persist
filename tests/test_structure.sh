@@ -79,4 +79,22 @@ for c in start checkpoint handoff complete; do
 done
 note "ok: missing Outline targets are created, not skipped"
 
+# 10. An oversized record is compacted into a history child, never left oversized,
+# and the Tasks flag has one written format. Both were guessed at in a live handoff.
+grep -q 'history before compaction' "$skill" || fail "skill does not say how to compact an oversized record"
+for c in checkpoint handoff complete; do
+  grep -q 'Compacting an oversized record' "$ROOT/commands/$c.md" || fail "commands/$c.md may leave an oversized record"
+done
+grep -qF '* **<task-slug>** (<flag>, <YYYY-MM-DD>): <one-line summary>' "$skill" \
+  || fail "skill does not state where the Tasks flag lives"
+for c in start checkpoint handoff complete; do
+  grep -q "record's line in the \`Tasks\` parent body" "$ROOT/commands/$c.md" || fail "commands/$c.md does not say where the Tasks flag lives"
+done
+note "ok: oversized records are compacted and the Tasks flag has a fixed format"
+
+# 11. A root collection named only by the built-in default is never created.
+grep -q 'If `root_collection_source` is `default`, never create' "$skill" \
+  || fail "skill may create a collection the config never named"
+note "ok: a default-only root collection is asked about, not created"
+
 [ "$fails" = 0 ] && echo "PASS test_structure" || { echo "$fails failure(s)"; exit 1; }

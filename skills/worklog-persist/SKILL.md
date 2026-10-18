@@ -126,15 +126,19 @@ Run before the first write in a session, never before a read-only load.
 
 **Never skip a write because a target is missing.** A missing collection, world
 folder, project folder, `Tasks` parent or record is created here, then the write
-goes ahead. Stopping is right only for an `ignored` repo, an `UNRESOLVED` world or
-Outline being unavailable, and each of those is reported, never silent.
+goes ahead. Stopping is right only for an `ignored` repo, an `UNRESOLVED` world,
+a missing root collection that only the default names (step 2) or Outline being
+unavailable, and each of those is reported, never silent.
 
 1. Resolve identity. On `UNRESOLVED` run Onboarding; on an `ignored` repo stop.
 2. Find the collection named `root_collection` (the first segment of `kb_path`) in
    the `list_collections` result. If it is missing, create it with
    `create_collection` and say so in one line. If only a near match exists (other
    case or spacing), do not create a second one: ask whether the config or the
-   collection name is wrong.
+   collection name is wrong. If `root_collection_source` is `default`, never create
+   it: the config names no collection, so a new one would split the KB on a machine
+   whose config is incomplete. Ask which existing collection to use and have the
+   operator set `outline.root_collection` in the file at `config_path`.
 3. Resolve each remaining segment of `kb_path` with `list_documents`. Create only
    what is missing, and check each child before you create it. This repairs a
    partial folder and never duplicates.
@@ -209,6 +213,16 @@ or blocker is superseded, replace it; the old wording lives in the checkpoint
 history. Changed files, test output and step-by-step evidence belong in the
 checkpoint doc, not in the record.
 
+**Compacting an oversized record.** A record found over about 4,000 characters
+(older records grew before this rule) is compacted in the same write, never left
+as is to protect its history. Moving is not deleting:
+
+1. Create a checkpoint child titled `<YYYY-MM-DD> history before compaction` and
+   copy the superseded text into it verbatim, with the back-link `Record: [[<slug>]]`.
+2. Rewrite the record's sections to current state only, under the limit, and link
+   that child first in `## Checkpoints`.
+3. Report the compaction in one line: old and new size, and the child's title.
+
 Distinguish **verified / inferred / unverified / blocked** claims explicitly. Never
 present an unverified claim as verified.
 
@@ -262,9 +276,18 @@ The record status and the flag in the `Tasks` parent child-list differ. Map them
 | `handoff` | `doing` |
 | `complete` | `done` |
 
-A new record always goes into the `Tasks` child-list with its flag, and each status
-change updates that flag. If the parent is missing, create it through Bootstrap,
-then add the record.
+The flag has no field of its own. It is the text in brackets on the record's line in
+the `Tasks` parent document body, one line per record:
+
+```
+* **<task-slug>** (<flag>, <YYYY-MM-DD>): <one-line summary>
+```
+
+A new record always gets this line, and each status change patches it
+(`editMode: "patch"`, `findText` = the record's current line) with the new flag and
+date. If the line is missing, add it to the parent's task list; if the parent uses
+another list layout, keep that layout and change only the flag word. If the parent
+is missing, create it through Bootstrap, then add the record.
 
 ## Lifecycle (maps to the commands)
 
