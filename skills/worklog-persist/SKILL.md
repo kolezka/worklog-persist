@@ -15,8 +15,8 @@ This skill is the operational contract. The eight slash commands
 (`/load`, `/start`, `/checkpoint`, `/handoff`, `/complete`, `/dry-run`, `/off`,
 `/setup`) are thin entry points that run the relevant part of this contract.
 
-The Outline tools are `list_collections`, `list_documents`, `fetch`,
-`create_document`, `update_document` and `move_document`. Their prefix depends on
+The Outline tools are `list_collections`, `create_collection`, `list_documents`,
+`fetch`, `create_document`, `update_document` and `move_document`. Their prefix depends on
 where the `outline` server is configured:
 
 - `mcp__outline__*` when the user also configures `outline` at user, project or
@@ -113,8 +113,8 @@ Names in angle brackets come from the resolver.
 ```
 
 - Work records go to `record_path`. Prefer updating an existing doc over a new one.
-- Cross-project lessons and conventions go to `global_collection`. Never recreate it
-  and never create a second global KB.
+- Cross-project lessons and conventions go to `global_collection`. If it is
+  missing, create it once as in Bootstrap step 2; never create a second global KB.
 - Never delete. To retire a doc, move it to `archive_collection`.
 - Outline addresses are chains of **titles**. Renaming a folder or doc breaks every
   `[[link]]` to it. Rename only on request, and across Specs/Plans/Tasks together.
@@ -124,15 +124,28 @@ Names in angle brackets come from the resolver.
 
 Run before the first write in a session, never before a read-only load.
 
+**Never skip a write because a target is missing.** A missing collection, world
+folder, project folder, `Tasks` parent or record is created here, then the write
+goes ahead. Stopping is right only for an `ignored` repo, an `UNRESOLVED` world or
+Outline being unavailable, and each of those is reported, never silent.
+
 1. Resolve identity. On `UNRESOLVED` run Onboarding; on an `ignored` repo stop.
-2. Resolve each segment of `kb_path` with `list_documents`. Create only what is
-   missing, and check each child before you create it. This repairs a partial
-   folder and never duplicates.
-3. Seeding shape depends on depth: a **world** folder gets `INDEX` only; a
+2. Find the collection named `root_collection` (the first segment of `kb_path`) in
+   the `list_collections` result. If it is missing, create it with
+   `create_collection` and say so in one line. If only a near match exists (other
+   case or spacing), do not create a second one: ask whether the config or the
+   collection name is wrong.
+3. Resolve each remaining segment of `kb_path` with `list_documents`. Create only
+   what is missing, and check each child before you create it. This repairs a
+   partial folder and never duplicates.
+4. Seeding shape depends on depth: a **world** folder gets `INDEX` only; a
    **project** folder gets `INDEX`, `Specs`, `Plans`, `Tasks`. Never seed
    `Specs`/`Plans`/`Tasks` at world level. Running bootstrap twice creates nothing
    new.
-4. A folder that has no `INDEX` is a hub gap. Report it, do not skip it silently.
+5. A folder that has no `INDEX` is a hub gap. Create the `INDEX`, do not skip it
+   silently.
+6. Report what bootstrap created, one line per collection or folder. A failed
+   create stops the write and is reported with the Outline error.
 
 ## Onboarding (unresolved repo)
 
@@ -250,7 +263,8 @@ The record status and the flag in the `Tasks` parent child-list differ. Map them
 | `complete` | `done` |
 
 A new record always goes into the `Tasks` child-list with its flag, and each status
-change updates that flag. If the parent is missing, report the record as orphaned.
+change updates that flag. If the parent is missing, create it through Bootstrap,
+then add the record.
 
 ## Lifecycle (maps to the commands)
 
@@ -258,7 +272,9 @@ change updates that flag. If the parent is missing, report the record as orphane
   project `INDEX` and linked docs before substantive work; return a concise
   current-state summary. Read checkpoint child docs only when the record's state
   is not enough. If Outline is unavailable, say persistence is unavailable and
-  stop the load.
+  stop the load. Load stays read-only: if the collection, folder or record does
+  not exist yet, say which one is missing and that the first write will create
+  it. Never report a missing target as "no prior state" without naming it.
 - **start**: bootstrap if needed; create or update `record_path` with objective, acceptance criteria,
   repo, worktree, branch; link related Specs/Plans/existing docs. Update the `Tasks`
   parent child-list.

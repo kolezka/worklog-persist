@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: INVARIANTS
-verified_against: 7c67f29
-verified_on: 2026-10-16
+verified_against: 2d0b8af
+verified_on: 2026-10-18
 ---
 
 # Invariants
@@ -155,3 +155,19 @@ different worlds tie for the deepest root [verified]. Defect prevented: a repo
 in a shared parent dir landing in whichever world happened to be listed first.
 `tests/test_context.sh::"equal-depth tie is ambiguous"` covers it (test suite
 only) [verified].
+
+### 16. A missing Outline target is created, never a silent skip
+
+`skills/worklog-persist/SKILL.md::"Never skip a write because a target is missing"`
+[verified]. Bootstrap creates a missing `root_collection` with `create_collection`,
+then any missing world folder, project folder, `INDEX` or `Tasks` parent, and
+reports each one it created [verified]. `/checkpoint`, `/handoff` and
+`/complete` run `/start` first when the record or its folder is missing
+(`commands/checkpoint.md::"never skip the write"`) [verified]. A near match
+(other case or spacing) is asked about, not duplicated [verified]. Load stays
+read-only and names what is missing [verified]. Defect prevented: a fresh
+operator, or a config whose `root_collection` names nothing yet, losing every
+record while the session carries on as if persistence worked.
+`tests/test_structure.sh::"missing Outline targets are created, not skipped"`
+checks the text is present (test suite only); no test drives the Outline calls
+[verified].

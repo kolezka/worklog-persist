@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: CONTRACTS
-verified_against: 7c67f29
-verified_on: 2026-10-16
+verified_against: 2d0b8af
+verified_on: 2026-10-18
 ---
 
 # Contracts
@@ -32,8 +32,8 @@ skill (test suite only).
 
 ## MCP tool discovery: two possible prefixes, never assumed
 
-The Outline tools are `list_collections`, `list_documents`, `fetch`,
-`create_document`, `update_document`, `move_document`
+The Outline tools are `list_collections`, `create_collection`, `list_documents`,
+`fetch`, `create_document`, `update_document`, `move_document`
 (`skills/worklog-persist/SKILL.md::"Their prefix depends on"`)
 [verified]. Their prefix is `mcp__outline__*` when a user, project or local scope
 also configures an `outline` server, or

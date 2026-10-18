@@ -1,8 +1,8 @@
 ---
 block: session-hook
 doc: INVARIANTS
-verified_against: 7c67f29
-verified_on: 2026-10-16
+verified_against: 2d0b8af
+verified_on: 2026-10-18
 ---
 
 # Invariants

@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: DECISIONS
-verified_against: 7c67f29
-verified_on: 2026-10-16
+verified_against: 2d0b8af
+verified_on: 2026-10-18
 ---
 
 # Decisions
@@ -176,3 +176,19 @@ The resulting order is config, `$WORKLOG_WORLD`, path root, `UNRESOLVED`.
 `$WORKLOG_WORLD` sits above path root, as the old env var sat above it on master
 [verified]. `tests/test_context.sh::"old coupling ignored"` includes an overlay
 file, so the scan cannot quietly return [verified].
+
+## Create a missing collection on write, ask on a near match
+
+[historical: 2026-10-18, this change] Bootstrap used to resolve `kb_path` only
+with `list_documents`, which cannot see a collection that does not exist. With a
+missing `root_collection` (for example the neutral `"Worklog"` default from the
+decision above) the write had nowhere to go and sessions dropped it quietly. The
+fix: find the collection in `list_collections` and create it when absent, the
+same lazy, idempotent repair the folders already got [verified]. The
+alternative considered: refuse and ask the operator, as for an `UNRESOLVED`
+world. It lost because the world and project are already known here; only the
+container is missing, and asking every fresh install is friction with no
+decision behind it [inferred]. A near match is the exception: a collection
+that differs only in case or spacing usually means a config typo, so the skill
+asks instead of creating a twin [inferred]. Load stays read-only by the
+existing Bootstrap rule [verified].
