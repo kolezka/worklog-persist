@@ -1,8 +1,8 @@
 ---
 block: packaging
 doc: OPERATIONS
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: fcd9e31
+verified_on: 2026-10-23
 ---
 
 # Operations
@@ -30,6 +30,8 @@ plugin-level install lifecycle.
 | `make test-sh` | Runs every `tests/*.sh` suite; not collected by `make test` [verified]. |
 | `make lint` | `` `Makefile::"shellcheck every shell file"` ``, at warning severity [verified]. |
 | `make live` | Opt-in reachability probe against the real Outline endpoint [verified]. |
+| `make test-native` | `claude plugin validate .` + `claude plugin test .`; fails if `claude` is missing [verified: uncommitted worktree, not at the pin]. |
+| `make typecheck-native TYPES=<file>` | `tsc` (through `pnpm dlx`) over `hooks/`, `types/` and `tests/*.tsx` against that declaration file [verified: uncommitted worktree, not at the pin]. |
 
 `install.sh`'s own usage line is the source of truth for flags:
 `` `install.sh::usage()` `` [verified].

@@ -1,8 +1,8 @@
 ---
 block: verification
 doc: OPERATIONS
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: fcd9e31
+verified_on: 2026-10-23
 ---
 
 # Operations
@@ -30,6 +30,8 @@ trusting it. See [`CONTRACTS.md`](CONTRACTS.md) for what each target promises.
 - `uvx` with the `shellcheck-py` package, for `make lint`; no local `shellcheck`
   install is required. [verified]
 - `curl`, only for `tests/test_live_outline.sh`. [verified]
+- the `claude` CLI, a build with Mods, only for `make test-native`; `pnpm`, only
+  for `make typecheck-native`, which fails when it is not on `PATH`. [verified: uncommitted worktree, not at the pin]
 
 ---
 
@@ -41,6 +43,8 @@ trusting it. See [`CONTRACTS.md`](CONTRACTS.md) for what each target promises.
 | `make test-sh` | `tests/test_structure.sh`, `tests/test_install.sh`, `tests/test_context.sh`, `tests/test_config_add.sh`, `tests/test_offswitch.sh`, `tests/test_stop_guard.sh` |
 | `make lint` | `shellcheck` on `install.sh`, `scripts/*.sh`, `tests/*.sh` |
 | `make check` | `test`, then `test-sh`, then `install.sh --check` |
+| `make test-native` | `claude plugin validate .`, then `claude plugin test .` (`tests/worklog-panel.test.tsx`) [verified: uncommitted worktree, not at the pin] |
+| `make typecheck-native TYPES=<file>` | `tsc` against the build's `claude-code.d.ts`; the plugin-authoring skill names where that file is written for the running build [verified: uncommitted worktree, not at the pin] |
 
 A single suite can be run directly, without `make`:
 

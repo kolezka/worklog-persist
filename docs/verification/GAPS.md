@@ -1,8 +1,8 @@
 ---
 block: verification
 doc: GAPS
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: fcd9e31
+verified_on: 2026-10-23
 ---
 
 # Gaps
@@ -72,3 +72,14 @@ suite scans commit history to confirm a given fix commit actually added a test, 
 that the test was run against the pre-fix revision and observed failing. Doing so
 would require re-checking out prior revisions in CI, which this repo does not do.
 [inferred]
+
+## The native panel suite is outside `make check` and never live
+
+`tests/worklog-panel.test.tsx` runs only through `Makefile::test-native`, which
+needs the `claude` CLI, so `make check` passes without it [verified: uncommitted worktree, not at the pin].
+Its fixtures stand in for Outline, `$.process.run` and `$.command.run`, so it
+proves the hooks' logic and the pane's tree, not that a session loads the module,
+that the real server answers in the decoded shapes, or that a dispatched command
+wrote anything [verified: uncommitted worktree, not at the pin]. The tree fixture follows saved results of earlier
+sessions, not a server schema; see
+[`../session-hook/GAPS.md`](../session-hook/GAPS.md#native-panel-what-is-not-proven).

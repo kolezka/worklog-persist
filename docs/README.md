@@ -1,8 +1,8 @@
 ---
 block: _root
 doc: README
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: fcd9e31
+verified_on: 2026-10-23
 unassigned: [README.md, AGENTS.md, .claude/, .ai/, .gitkeep, .gitattributes, .repo-intel.json, docs/]
 ---
 
@@ -20,10 +20,14 @@ A Claude Code plugin that keeps the state of active work in Outline, so the next
 session can continue it. It has three moving parts: a skill and eight slash
 commands that tell the agent what to read and write, a SessionStart hook that
 reminds the agent of the rule, and an installer that registers the plugin with
-the `claude` CLI.
+the `claude` CLI. A native worklog panel (a Mods hooks module, owned by
+[`session-hook/`](session-hook/README.md)) shows the current project's records
+and runs the same commands; it only reads Outline itself
+[verified: uncommitted worktree, not at the pin].
 
-The plugin never calls Outline itself. Every read and write is an agent call to
-the `outline` MCP server, driven by the skill text. The tool prefix is
+Every write is an agent call to the `outline` MCP server, driven by the skill
+text. The only direct call is the native panel's read-only `$.mcp.call`
+[verified: uncommitted worktree, not at the pin]. The tool prefix is
 `mcp__outline__*` or `mcp__plugin_worklog-persist_outline__*`; see
 [`persistence-protocol/CONTRACTS.md`](persistence-protocol/CONTRACTS.md).
 
@@ -44,7 +48,7 @@ flowchart LR
 | Block | What it owns |
 |---|---|
 | [`packaging/`](packaging/) | Plugin and marketplace manifests, the MCP server entry, the installer, the `Makefile` |
-| [`session-hook/`](session-hook/) | The SessionStart hook and the off switch that gates it |
+| [`session-hook/`](session-hook/) | The SessionStart and Stop hooks, the off switch that gates them, and the native worklog panel module |
 | [`persistence-protocol/`](persistence-protocol/) | The skill, the eight commands, identity resolution, the config writer and secret redaction |
 | [`verification/`](verification/) | The test suites, what each one proves, and what nothing proves |
 

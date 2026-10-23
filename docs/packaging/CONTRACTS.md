@@ -1,8 +1,8 @@
 ---
 block: packaging
 doc: CONTRACTS
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: fcd9e31
+verified_on: 2026-10-23
 ---
 
 # Contracts
@@ -24,6 +24,14 @@ name is not exactly `worklog-persist` or if `marketplace.json` does not list it
 
 enforcement: `` `install.sh::check_structure()` `` (only at `--check` time), plus
   `` `tests/test_structure.sh::"structure valid and idempotent"` ``.
+
+`.claude-plugin/plugin.json::"types"` points at `types/index.d.ts`, the native
+panel's state contract, which `claude plugin validate` holds the hooks module to
+[verified: uncommitted worktree, not at the pin]. The contract itself belongs to
+[session-hook](../session-hook/CONTRACTS.md#native-worklog-panel).
+
+enforcement: `` `Makefile::test-native` `` runs `claude plugin validate .`; not
+  part of `make check`.
 
 ## Install CLI: dry-run unless told otherwise
 
@@ -128,6 +136,14 @@ enforcement: convention on the packaging side (nothing in this block asserts
 `test`, `test-sh`, then `` `./install.sh --check` `` [verified]. `make live` runs
 `` `Makefile::"WORKLOG_PERSIST_LIVE=1 bash tests/test_live_outline.sh"` ``, an
 opt-in reachability probe against the real Outline endpoint [verified].
+`make test-native` runs `claude plugin validate .` and `claude plugin test .`,
+and fails with a message when the `claude` CLI is missing instead of skipping
+(`` `Makefile::"native tests did not run"` ``) [verified: uncommitted worktree, not at the pin].
+`make typecheck-native TYPES=<claude-code.d.ts>` type-checks `hooks/`, `types/`
+and the native tests against that build's declarations with
+`pnpm --package=typescript@5.6.3 dlx tsc`, and fails when `TYPES` is not a file
+or `pnpm` is not on `PATH` (`` `Makefile::"pnpm not found; the type-check did not run"` ``) [verified: uncommitted worktree, not at the pin]. Neither is part of `make check`, because both
+need the `claude` CLI and `check` does not.
 
 enforcement: `` `Makefile::help` `` lists every target from its own `##`
   comments, so an undocumented target cannot silently exist; there is no test

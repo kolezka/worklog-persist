@@ -1,8 +1,8 @@
 ---
 block: verification
 doc: README
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: fcd9e31
+verified_on: 2026-10-23
 owns: [tests/]
 depends_on: [packaging, session-hook, persistence-protocol]
 ---
@@ -33,6 +33,11 @@ ninth, `tests/test_live_outline.sh`, is opt-in and touches a real network
 endpoint; it never runs as part of `Makefile::"Everything offline: both suites plus the structure check"`.
 [verified]
 
+A tenth suite, `tests/worklog-panel.test.tsx`, runs under `claude plugin test`
+through `Makefile::test-native`, not through `make check`, because it needs the
+`claude` CLI. It drives the native panel's hooks and pane on the terminal and
+desktop surfaces with fixtures for Outline, processes and commands [verified: uncommitted worktree, not at the pin].
+
 `tests/test_docs_layout.py` is the suite that checks this very `docs/` tree
 against the rules in [`../CONVENTIONS.md`](../CONVENTIONS.md), including the file
 you are reading. [verified]
@@ -54,6 +59,7 @@ flowchart TD
         F[test_docs_layout.py] --> RF["docs/ tree vs CONVENTIONS.md"]
     end
     L[test_live_outline.sh] -->|"make live, opt-in,\nneeds OUTLINE_API_TOKEN"| O[("real Outline endpoint")]
+    N[worklog-panel.test.tsx] -->|"make test-native,\nneeds the claude CLI"| RN["hooks/register.tsx pane,\nfixture Outline"]
 ```
 
 See [`OPERATIONS.md`](OPERATIONS.md) for the exact commands and required tools.

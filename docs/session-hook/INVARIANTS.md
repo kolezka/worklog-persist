@@ -1,8 +1,8 @@
 ---
 block: session-hook
 doc: INVARIANTS
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: fcd9e31
+verified_on: 2026-10-23
 ---
 
 # Invariants
@@ -88,3 +88,112 @@ work that was shown `[verified]`. The first stop after the cooldown sees all the
 work since then. Defect prevented: a burst of commits inside the cooldown that
 never reaches a worklog. `tests/test_stop_guard.sh::"cooldown: new work after cooldown blocks"`
 covers it (test suite only) `[verified]`.
+
+## 9. The panel never writes to Outline and never bootstraps
+
+The panel only reads (see [CONTRACTS](CONTRACTS.md#outline-is-read-with-three-tools-never-written)).
+An ignored repo, an unresolved world, a broken config or a missing folder is
+reported and stops the read; nothing is created
+(`hooks/register.tsx::refresh()`) `[verified: uncommitted worktree, not at the pin]`. Writes happen only inside the
+slash commands it dispatches. Defect prevented: a viewer that creates folders a
+person never asked for.
+
+## 10. Only the current project is shown
+
+`hooks/worklog-panel.ts::resolveScope()` walks the resolver's `kb_path` title by
+title through the collection tree; two siblings with the same title are an
+error, not a guess. Preview and task reads go through
+`hooks/register.tsx::fetchInScope()`, which refuses an id outside that subtree
+and an answer whose id or parent differs from the request `[verified: uncommitted worktree, not at the pin]`.
+Defect prevented: a same-named project in another world leaking into the pane.
+`tests/worklog-panel.test.tsx::"a same-named project in another world never appears"`
+and `tests/worklog-panel.test.tsx::"a preview of a document outside the project is refused"`
+cover it (test suite only).
+
+## 11. A failed read is a failure, never an empty project
+
+Every decoder throws on an unknown shape, and `refresh()` shows the error with a
+Retry button; "No task records" is drawn only for a decoded, empty `Tasks`
+folder `[verified: uncommitted worktree, not at the pin]`. Defect prevented: a gateway error page read as "nothing
+recorded yet".
+
+## 12. Nothing of an old snapshot is shown or used before the scope is confirmed
+
+A refresh empties the project identity, persistence indicator, documents, active
+task, task detail, preview and any action still being edited before it reads anything; while it runs no
+action, task, preview or Load can start (`hooks/register.tsx::refresh()`,
+`hooks/register.tsx::fetchInScope()`) `[verified: uncommitted worktree, not at the pin]`. A stop (ignored,
+unresolved, broken config, missing folder, failure) keeps them empty. The active
+task and the open preview are held aside and come back only when a later refresh
+resolves the same `kb_path` and both ids are still in its tree. Defect
+prevented: an ignored or changed project still showing, or loading, the previous
+project's documents.
+`tests/worklog-panel.test.tsx::"a refresh hides the old preview and Load until the scope is confirmed"`,
+`tests/worklog-panel.test.tsx::"an ignored scope shows none of the old project"` and
+`tests/worklog-panel.test.tsx::"the selection survives a refresh of the same scope, not a different one"`
+cover it (test suite only). The old project label and persistence indicator also
+stay hidden during resolution or a resolver failure, covered by
+`tests/worklog-panel.test.tsx::"a refresh hides the previous project label and persistence indicator"`
+and `tests/worklog-panel.test.tsx::"a malformed resolver response never leaves the last project in the header"`
+`[verified: uncommitted worktree, not at the pin]`.
+
+An unplaced open clears the snapshot too: the engine may render the pane later,
+so it must not retain a prior project's body or Load action
+(`hooks/register.tsx::open()`) `[verified: uncommitted worktree, not at the pin]`.
+`tests/worklog-panel.test.tsx::"an unplaced reopen clears the old snapshot before a surface later attaches"`
+covers the delayed attachment path (test suite only).
+
+## 12a. An older answer never replaces a newer one
+
+Each refresh, task read and preview carries a token; a response whose token is
+no longer current is dropped (`hooks/register.tsx::showPreview()`,
+`hooks/register.tsx::loadTask()`), and so is a task or preview read that lands
+after another refresh started `[verified: uncommitted worktree, not at the pin]`. Load reads the preview that is
+current when pressed. Defect prevented: a slow preview of one document being
+loaded after the person picked another.
+`tests/worklog-panel.test.tsx::"a stale preview response cannot replace a newer selection"`,
+`tests/worklog-panel.test.tsx::"a task read that lands after a scope change is dropped"` and
+`tests/worklog-panel.test.tsx::"an older overlapping refresh cannot replace a newer one"`
+cover it (test suite only).
+
+## 13. No active task is guessed; preview never retargets it
+
+The active task is set only by pressing a task; nothing picks one from dates or
+order. Previewing a checkpoint or any document leaves it unchanged `[verified: uncommitted worktree, not at the pin]`.
+Defect prevented: a checkpoint written to the wrong record.
+
+## 14. Preview adds nothing to the conversation
+
+Only the Load button calls `$.session.append` `[verified: uncommitted worktree, not at the pin]`.
+`tests/worklog-panel.test.tsx::"preview shows the body and adds nothing to the conversation"`
+covers it (test suite only). Defect prevented: browsing history filling the
+model's context.
+
+## 15. A dispatched command is not a write
+
+An action moves through queued, dispatched, then "turn ended" after the next
+main-loop `turn.complete`, which refreshes the snapshot; no state says saved.
+While one is queued or dispatched no other action can be started, and an
+action picked under one refresh cannot run under another
+(`hooks/register.tsx::pickAction()`, `hooks/register.tsx::runAction()`) `[verified: uncommitted worktree, not at the pin]`.
+`setup` and `off` stay offered in an ignored or unresolved repo; a task action
+there asks for a task, since none is active. Defect prevented: reporting
+success from a command that only queued, and double dispatch.
+
+## 16. Another directory's snapshot is never drawn
+
+`session.start` (also run on a reload) empties the state when the stored
+`cwd` differs from `$.session.cwd()`, and `session.end` with reason `clear`
+empties it always `[verified: uncommitted worktree, not at the pin]`. Defect prevented: a moved or cleared session
+showing the previous project.
+
+## 17. A saved-result notice cannot authorize arbitrary file reads
+
+`hooks/outline-result.ts::readOutline()` confines recovery to the current
+session's tool-results directory and the exact server/tool filename prefix,
+checks the resolved path, and rejects oversized or malformed files
+`[verified: uncommitted worktree, not at the pin]`. Defect prevented: a forged
+MCP notice reading another session's output or a private file. Recovered blocks
+still pass the existing Outline shape and project-scope checks; a file pointer
+is not evidence that the document belongs to this project
+`[verified: uncommitted worktree, not at the pin]`.

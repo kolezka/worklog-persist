@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: OPERATIONS
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: fcd9e31
+verified_on: 2026-10-23
 ---
 
 # Operations
@@ -31,6 +31,12 @@ Eight slash commands, each a thin pointer into
 
 All descriptions above are the command's own front-matter `description:` field,
 read verbatim [verified].
+
+A ninth command, `/show` (`commands/show.md::"Open the native worklog panel for the current project."`),
+is not a lifecycle step. Where the native panel module is loaded, it answers the
+command itself and opens the pane; the markdown body only runs where it is not,
+and tells the agent to say so and write nothing [verified: uncommitted worktree, not at the pin]. The panel
+is documented in [session-hook](../session-hook/OPERATIONS.md#native-worklog-panel).
 
 ## Identity: what `resolve-context.sh` resolves and what it does not
 

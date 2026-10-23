@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: README
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: fcd9e31
+verified_on: 2026-10-23
 owns: [skills/, commands/, scripts/resolve-context.sh, scripts/resolve_context.py, scripts/config-add.sh, scripts/config_add.py, scripts/redact.py]
 depends_on: [packaging]
 ---
@@ -24,7 +24,8 @@ SessionStart hook or the on/off state file either; that is
 
 ## Boundary
 
-Owned: `skills/worklog-persist/SKILL.md`, all eight files in `commands/`,
+Owned: `skills/worklog-persist/SKILL.md`, the eight lifecycle files in `commands/`
+and `commands/show.md`,
 `scripts/resolve-context.sh`, `scripts/resolve_context.py`,
 `scripts/config-add.sh`, `scripts/config_add.py`, `scripts/redact.py`.
 
