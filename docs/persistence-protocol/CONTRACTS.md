@@ -1,7 +1,7 @@
 ---
 block: persistence-protocol
 doc: CONTRACTS
-verified_against: fcd9e31
+verified_against: b92a027
 verified_on: 2026-10-23
 ---
 
@@ -30,7 +30,7 @@ skill (test suite only).
 
 `commands/show.md` is a ninth file and not a verb: it never runs the skill, and
 its body forbids any Outline call (`commands/show.md::"Do not call any Outline tool"`)
-[verified: uncommitted worktree, not at the pin]. The native panel runs the eight verbs above by name through
+[verified]. The native panel runs the eight verbs above by name through
 `$.command.run`, so renaming a command file removes that action from the panel.
 
 enforcement: `tests/worklog-panel.test.tsx::"actions come from the command list; a missing one is not offered"`

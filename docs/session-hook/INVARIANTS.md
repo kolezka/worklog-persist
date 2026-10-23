@@ -1,7 +1,7 @@
 ---
 block: session-hook
 doc: INVARIANTS
-verified_against: fcd9e31
+verified_against: b92a027
 verified_on: 2026-10-23
 ---
 
@@ -94,7 +94,7 @@ covers it (test suite only) `[verified]`.
 The panel only reads (see [CONTRACTS](CONTRACTS.md#outline-is-read-with-three-tools-never-written)).
 An ignored repo, an unresolved world, a broken config or a missing folder is
 reported and stops the read; nothing is created
-(`hooks/register.tsx::refresh()`) `[verified: uncommitted worktree, not at the pin]`. Writes happen only inside the
+(`hooks/register.tsx::refresh()`) `[verified]`. Writes happen only inside the
 slash commands it dispatches. Defect prevented: a viewer that creates folders a
 person never asked for.
 
@@ -104,7 +104,7 @@ person never asked for.
 title through the collection tree; two siblings with the same title are an
 error, not a guess. Preview and task reads go through
 `hooks/register.tsx::fetchInScope()`, which refuses an id outside that subtree
-and an answer whose id or parent differs from the request `[verified: uncommitted worktree, not at the pin]`.
+and an answer whose id or parent differs from the request `[verified]`.
 Defect prevented: a same-named project in another world leaking into the pane.
 `tests/worklog-panel.test.tsx::"a same-named project in another world never appears"`
 and `tests/worklog-panel.test.tsx::"a preview of a document outside the project is refused"`
@@ -114,7 +114,7 @@ cover it (test suite only).
 
 Every decoder throws on an unknown shape, and `refresh()` shows the error with a
 Retry button; "No task records" is drawn only for a decoded, empty `Tasks`
-folder `[verified: uncommitted worktree, not at the pin]`. Defect prevented: a gateway error page read as "nothing
+folder `[verified]`. Defect prevented: a gateway error page read as "nothing
 recorded yet".
 
 ## 12. Nothing of an old snapshot is shown or used before the scope is confirmed
@@ -122,7 +122,7 @@ recorded yet".
 A refresh empties the project identity, persistence indicator, documents, active
 task, task detail, preview and any action still being edited before it reads anything; while it runs no
 action, task, preview or Load can start (`hooks/register.tsx::refresh()`,
-`hooks/register.tsx::fetchInScope()`) `[verified: uncommitted worktree, not at the pin]`. A stop (ignored,
+`hooks/register.tsx::fetchInScope()`) `[verified]`. A stop (ignored,
 unresolved, broken config, missing folder, failure) keeps them empty. The active
 task and the open preview are held aside and come back only when a later refresh
 resolves the same `kb_path` and both ids are still in its tree. Defect
@@ -135,11 +135,11 @@ cover it (test suite only). The old project label and persistence indicator also
 stay hidden during resolution or a resolver failure, covered by
 `tests/worklog-panel.test.tsx::"a refresh hides the previous project label and persistence indicator"`
 and `tests/worklog-panel.test.tsx::"a malformed resolver response never leaves the last project in the header"`
-`[verified: uncommitted worktree, not at the pin]`.
+`[verified]`.
 
 An unplaced open clears the snapshot too: the engine may render the pane later,
 so it must not retain a prior project's body or Load action
-(`hooks/register.tsx::open()`) `[verified: uncommitted worktree, not at the pin]`.
+(`hooks/register.tsx::open()`) `[verified]`.
 `tests/worklog-panel.test.tsx::"an unplaced reopen clears the old snapshot before a surface later attaches"`
 covers the delayed attachment path (test suite only).
 
@@ -148,7 +148,7 @@ covers the delayed attachment path (test suite only).
 Each refresh, task read and preview carries a token; a response whose token is
 no longer current is dropped (`hooks/register.tsx::showPreview()`,
 `hooks/register.tsx::loadTask()`), and so is a task or preview read that lands
-after another refresh started `[verified: uncommitted worktree, not at the pin]`. Load reads the preview that is
+after another refresh started `[verified]`. Load reads the preview that is
 current when pressed. Defect prevented: a slow preview of one document being
 loaded after the person picked another.
 `tests/worklog-panel.test.tsx::"a stale preview response cannot replace a newer selection"`,
@@ -159,12 +159,12 @@ cover it (test suite only).
 ## 13. No active task is guessed; preview never retargets it
 
 The active task is set only by pressing a task; nothing picks one from dates or
-order. Previewing a checkpoint or any document leaves it unchanged `[verified: uncommitted worktree, not at the pin]`.
+order. Previewing a checkpoint or any document leaves it unchanged `[verified]`.
 Defect prevented: a checkpoint written to the wrong record.
 
 ## 14. Preview adds nothing to the conversation
 
-Only the Load button calls `$.session.append` `[verified: uncommitted worktree, not at the pin]`.
+Only the Load button calls `$.session.append` `[verified]`.
 `tests/worklog-panel.test.tsx::"preview shows the body and adds nothing to the conversation"`
 covers it (test suite only). Defect prevented: browsing history filling the
 model's context.
@@ -175,7 +175,7 @@ An action moves through queued, dispatched, then "turn ended" after the next
 main-loop `turn.complete`, which refreshes the snapshot; no state says saved.
 While one is queued or dispatched no other action can be started, and an
 action picked under one refresh cannot run under another
-(`hooks/register.tsx::pickAction()`, `hooks/register.tsx::runAction()`) `[verified: uncommitted worktree, not at the pin]`.
+(`hooks/register.tsx::pickAction()`, `hooks/register.tsx::runAction()`) `[verified]`.
 `setup` and `off` stay offered in an ignored or unresolved repo; a task action
 there asks for a task, since none is active. Defect prevented: reporting
 success from a command that only queued, and double dispatch.
@@ -184,7 +184,7 @@ success from a command that only queued, and double dispatch.
 
 `session.start` (also run on a reload) empties the state when the stored
 `cwd` differs from `$.session.cwd()`, and `session.end` with reason `clear`
-empties it always `[verified: uncommitted worktree, not at the pin]`. Defect prevented: a moved or cleared session
+empties it always `[verified]`. Defect prevented: a moved or cleared session
 showing the previous project.
 
 ## 17. A saved-result notice cannot authorize arbitrary file reads
@@ -192,8 +192,8 @@ showing the previous project.
 `hooks/outline-result.ts::readOutline()` confines recovery to the current
 session's tool-results directory and the exact server/tool filename prefix,
 checks the resolved path, and rejects oversized or malformed files
-`[verified: uncommitted worktree, not at the pin]`. Defect prevented: a forged
+`[verified]`. Defect prevented: a forged
 MCP notice reading another session's output or a private file. Recovered blocks
 still pass the existing Outline shape and project-scope checks; a file pointer
 is not evidence that the document belongs to this project
-`[verified: uncommitted worktree, not at the pin]`.
+`[verified]`.

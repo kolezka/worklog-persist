@@ -1,7 +1,7 @@
 ---
 block: verification
 doc: CONTRACTS
-verified_against: fcd9e31
+verified_against: b92a027
 verified_on: 2026-10-23
 ---
 
@@ -49,9 +49,9 @@ enforcement: `Makefile::check`
 `Makefile::test-native` validates the plugin and runs
 `tests/worklog-panel.test.tsx` with `claude plugin test`; with no `claude` on
 `PATH` it prints `Makefile::"native tests did not run"` and exits non-zero
-[verified: uncommitted worktree, not at the pin]. Every Outline answer in that suite is a fixture: it never reaches
+[verified]. Every Outline answer in that suite is a fixture: it never reaches
 a real server, a registry or a real command run (`tests/worklog-panel.test.tsx::"nothing reaches a real Outline server"`)
-[verified: uncommitted worktree, not at the pin]. Each test asserts a drawn element or a recorded call, on the
+[verified]. Each test asserts a drawn element or a recorded call, on the
 terminal and desktop surfaces where it draws.
 
 enforcement: `Makefile::test-native`; not part of `make check`.

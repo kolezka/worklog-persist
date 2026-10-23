@@ -1,7 +1,7 @@
 ---
 block: persistence-protocol
 doc: GAPS
-verified_against: fcd9e31
+verified_against: b92a027
 verified_on: 2026-10-23
 ---
 
@@ -139,7 +139,7 @@ see that block's docs for what it actually proves.
 
 ## The pinned protocol rules from 0.3.2's follow-up are not described here yet
 
-The pin moved to the commit that merged three skill rules: compacting a record
+The pinned source includes three additional skill rules: compacting a record
 over about 4,000 characters into a `history before compaction` child
 (`skills/worklog-persist/SKILL.md::"history before compaction"`), the fixed
 `Tasks` flag line format (`skills/worklog-persist/SKILL.md::"(<flag>, <YYYY-MM-DD>)"`),

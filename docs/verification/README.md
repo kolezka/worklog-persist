@@ -1,7 +1,7 @@
 ---
 block: verification
 doc: README
-verified_against: fcd9e31
+verified_against: b92a027
 verified_on: 2026-10-23
 owns: [tests/]
 depends_on: [packaging, session-hook, persistence-protocol]
@@ -36,7 +36,7 @@ endpoint; it never runs as part of `Makefile::"Everything offline: both suites p
 A tenth suite, `tests/worklog-panel.test.tsx`, runs under `claude plugin test`
 through `Makefile::test-native`, not through `make check`, because it needs the
 `claude` CLI. It drives the native panel's hooks and pane on the terminal and
-desktop surfaces with fixtures for Outline, processes and commands [verified: uncommitted worktree, not at the pin].
+desktop surfaces with fixtures for Outline, processes and commands [verified].
 
 `tests/test_docs_layout.py` is the suite that checks this very `docs/` tree
 against the rules in [`../CONVENTIONS.md`](../CONVENTIONS.md), including the file

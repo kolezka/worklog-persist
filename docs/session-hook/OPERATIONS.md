@@ -1,7 +1,7 @@
 ---
 block: session-hook
 doc: OPERATIONS
-verified_against: fcd9e31
+verified_against: b92a027
 verified_on: 2026-10-23
 ---
 
@@ -146,7 +146,7 @@ instead.
 ## Native worklog panel
 
 Open with `/worklog-persist:show` or the prompt `show worklog panel`, in a build
-with Mods and the module loaded `[verified: uncommitted worktree, not at the pin]`. A development copy in a
+with Mods and the module loaded `[verified]`. A development copy in a
 session's mods folder loads only after the person running that session agrees.
 What installing or updating the plugin does to the module has not been checked.
 To try it from a checkout: `claude --plugin-dir <checkout>`.

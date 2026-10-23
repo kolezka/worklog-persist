@@ -1,7 +1,7 @@
 ---
 block: session-hook
 doc: CONTRACTS
-verified_against: fcd9e31
+verified_against: b92a027
 verified_on: 2026-10-23
 ---
 
@@ -250,7 +250,7 @@ enforcement: `tests/test_stop_guard.sh::"unresolved: reason points to /setup"`
 
 ## Native worklog panel
 
-Every claim in this section is `[verified: uncommitted worktree, not at the pin]`, and every
+Every claim in this section is `[verified]`, and every
 `enforcement:` here runs only under `make test-native` (`claude plugin test`
 with fixtures for Outline, processes and commands), never in a live session.
 
@@ -342,7 +342,7 @@ state update goes through `hooks/register.tsx::updatePanel()`, which updates the
 status afterwards; reload restores it from compatible session state. Project
 refreshes, project-read errors, unresolved scope and a cleared or moved session
 remove the line.
-These are `[verified: uncommitted worktree, not at the pin]` claims.
+These are `[verified]` claims.
 
 enforcement: `tests/worklog-panel.test.tsx::"the pinned status follows the task and labels document previews separately"`,
   `tests/worklog-panel.test.tsx::"previewing a document does not invent an active task in the status"`,
@@ -364,7 +364,7 @@ resolved paths, file kind, links and the native 4 MiB read limit before reading.
 The saved content must be a JSON array of text blocks; normal decoders still
 validate the recovered data. Unknown notices, unreadable files, wrong paths,
 oversized files and malformed payloads remain visible errors, not empty data.
-These are `[verified: uncommitted worktree, not at the pin]` claims.
+These are `[verified]` claims.
 
 The same recovery code decoded a real current-project tree through native MCP
 and native file IO `[historical: 2026-10-23, live read-only probe]`.

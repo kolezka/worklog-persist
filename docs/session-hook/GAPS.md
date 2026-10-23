@@ -1,7 +1,7 @@
 ---
 block: session-hook
 doc: GAPS
-verified_against: fcd9e31
+verified_against: b92a027
 verified_on: 2026-10-23
 ---
 
@@ -117,23 +117,23 @@ nothing about why (`scripts/stop_guard.py::write_marker()`) `[verified]`.
   `[historical: 2026-10-23, native read-only probe and operator screenshot]`.
 - **Saved-result recovery has a size and format limit.** It recognizes the
   observed host notice and rejects files over 4 MiB rather than reading partial
-  data (`hooks/outline-result.ts::readOutline()`) `[verified: uncommitted worktree, not at the pin]`.
+  data (`hooks/outline-result.ts::readOutline()`) `[verified]`.
 - **The tree format rests on observed responses.** `decodeTree()` follows one
   node per text block, as read from earlier sessions' saved results and one live
   call, not from a schema, since the tool declares no output schema. A server change shows as a
-  decode failure, not as wrong data `[verified: uncommitted worktree, not at the pin]`.
+  decode failure, not as wrong data `[verified]`.
 - **Search matches titles only.** The filter runs over the project tree's paths,
-  not document bodies `[verified: uncommitted worktree, not at the pin]`.
+  not document bodies `[verified]`.
 - **Redundant guards need isolated coverage.** The suite exercises UI event
   flows, not each internal guard separately. A passing flow test therefore does
   not prove that removing each phase or scope-token guard would fail it
   `[inferred]` from `tests/worklog-panel.test.tsx`,
   `hooks/register.tsx::runAction()` and `hooks/register.tsx::loadTask()`.
 - **A held preview is fetched again.** After a same-scope refresh the preview
-  is re-read from Outline, not restored from state `[verified: uncommitted worktree, not at the pin]`.
+  is re-read from Outline, not restored from state `[verified]`.
 - **Refresh after a turn runs inside `turn.complete`.** The turn's end waits for
   the Outline reads. Only a dispatched action or a non-read Outline tool call
-  during the turn triggers it `[verified: uncommitted worktree, not at the pin]`.
+  during the turn triggers it `[verified]`.
 - **The preview text is held in session state.** A large document stays in the
-  state value until the preview closes or the next refresh drops it `[verified: uncommitted worktree, not at the pin]`.
-- **The phrase is English and exact.** "show worklog panel" alone opens it `[verified: uncommitted worktree, not at the pin]`.
+  state value until the preview closes or the next refresh drops it `[verified]`.
+- **The phrase is English and exact.** "show worklog panel" alone opens it `[verified]`.

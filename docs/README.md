@@ -1,7 +1,7 @@
 ---
 block: _root
 doc: README
-verified_against: fcd9e31
+verified_against: b92a027
 verified_on: 2026-10-23
 unassigned: [README.md, AGENTS.md, .claude/, .ai/, .gitkeep, .gitattributes, .repo-intel.json, docs/]
 ---
@@ -23,11 +23,11 @@ reminds the agent of the rule, and an installer that registers the plugin with
 the `claude` CLI. A native worklog panel (a Mods hooks module, owned by
 [`session-hook/`](session-hook/README.md)) shows the current project's records
 and runs the same commands; it only reads Outline itself
-[verified: uncommitted worktree, not at the pin].
+[verified].
 
 Every write is an agent call to the `outline` MCP server, driven by the skill
 text. The only direct call is the native panel's read-only `$.mcp.call`
-[verified: uncommitted worktree, not at the pin]. The tool prefix is
+[verified]. The tool prefix is
 `mcp__outline__*` or `mcp__plugin_worklog-persist_outline__*`; see
 [`persistence-protocol/CONTRACTS.md`](persistence-protocol/CONTRACTS.md).
 

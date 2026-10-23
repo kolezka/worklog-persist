@@ -1,7 +1,7 @@
 ---
 block: verification
 doc: OPERATIONS
-verified_against: fcd9e31
+verified_against: b92a027
 verified_on: 2026-10-23
 ---
 
@@ -31,7 +31,7 @@ trusting it. See [`CONTRACTS.md`](CONTRACTS.md) for what each target promises.
   install is required. [verified]
 - `curl`, only for `tests/test_live_outline.sh`. [verified]
 - the `claude` CLI, a build with Mods, only for `make test-native`; `pnpm`, only
-  for `make typecheck-native`, which fails when it is not on `PATH`. [verified: uncommitted worktree, not at the pin]
+  for `make typecheck-native`, which fails when it is not on `PATH`. [verified]
 
 ---
 
@@ -43,8 +43,8 @@ trusting it. See [`CONTRACTS.md`](CONTRACTS.md) for what each target promises.
 | `make test-sh` | `tests/test_structure.sh`, `tests/test_install.sh`, `tests/test_context.sh`, `tests/test_config_add.sh`, `tests/test_offswitch.sh`, `tests/test_stop_guard.sh` |
 | `make lint` | `shellcheck` on `install.sh`, `scripts/*.sh`, `tests/*.sh` |
 | `make check` | `test`, then `test-sh`, then `install.sh --check` |
-| `make test-native` | `claude plugin validate .`, then `claude plugin test .` (`tests/worklog-panel.test.tsx`) [verified: uncommitted worktree, not at the pin] |
-| `make typecheck-native TYPES=<file>` | `tsc` against the build's `claude-code.d.ts`; the plugin-authoring skill names where that file is written for the running build [verified: uncommitted worktree, not at the pin] |
+| `make test-native` | `claude plugin validate .`, then `claude plugin test .` (`tests/worklog-panel.test.tsx`) [verified] |
+| `make typecheck-native TYPES=<file>` | `tsc` against the build's `claude-code.d.ts`; the plugin-authoring skill names where that file is written for the running build [verified] |
 
 A single suite can be run directly, without `make`:
 

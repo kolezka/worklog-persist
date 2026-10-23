@@ -1,7 +1,7 @@
 ---
 block: packaging
 doc: CONTRACTS
-verified_against: fcd9e31
+verified_against: b92a027
 verified_on: 2026-10-23
 ---
 
@@ -27,7 +27,7 @@ enforcement: `` `install.sh::check_structure()` `` (only at `--check` time), plu
 
 `.claude-plugin/plugin.json::"types"` points at `types/index.d.ts`, the native
 panel's state contract, which `claude plugin validate` holds the hooks module to
-[verified: uncommitted worktree, not at the pin]. The contract itself belongs to
+[verified]. The contract itself belongs to
 [session-hook](../session-hook/CONTRACTS.md#native-worklog-panel).
 
 enforcement: `` `Makefile::test-native` `` runs `claude plugin validate .`; not
@@ -138,11 +138,11 @@ enforcement: convention on the packaging side (nothing in this block asserts
 opt-in reachability probe against the real Outline endpoint [verified].
 `make test-native` runs `claude plugin validate .` and `claude plugin test .`,
 and fails with a message when the `claude` CLI is missing instead of skipping
-(`` `Makefile::"native tests did not run"` ``) [verified: uncommitted worktree, not at the pin].
+(`` `Makefile::"native tests did not run"` ``) [verified].
 `make typecheck-native TYPES=<claude-code.d.ts>` type-checks `hooks/`, `types/`
 and the native tests against that build's declarations with
 `pnpm --package=typescript@5.6.3 dlx tsc`, and fails when `TYPES` is not a file
-or `pnpm` is not on `PATH` (`` `Makefile::"pnpm not found; the type-check did not run"` ``) [verified: uncommitted worktree, not at the pin]. Neither is part of `make check`, because both
+or `pnpm` is not on `PATH` (`` `Makefile::"pnpm not found; the type-check did not run"` ``) [verified]. Neither is part of `make check`, because both
 need the `claude` CLI and `check` does not.
 
 enforcement: `` `Makefile::help` `` lists every target from its own `##`

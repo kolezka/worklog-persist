@@ -1,7 +1,7 @@
 ---
 block: session-hook
 doc: README
-verified_against: fcd9e31
+verified_against: b92a027
 verified_on: 2026-10-23
 owns: [hooks/, types/, scripts/session-start.sh, scripts/persistence-state.sh, scripts/stop-guard.sh, scripts/stop_guard.py]
 depends_on: [packaging, persistence-protocol]
@@ -32,17 +32,13 @@ It also holds the native worklog panel: a Mods hooks module
 hooks. It draws a pane for the current project, reads Outline through the
 session's connected MCP server, read-only, and runs lifecycle actions through
 this plugin's own slash commands
-`[verified: uncommitted worktree, not at the pin]`. The panel needs a Claude Code
+`[verified]`. The panel needs a Claude Code
 build with Mods and the module loaded. The `hooks` key of `hooks/hooks.json` and
 the lifecycle `commands/` files are unchanged by the panel
-`[verified: uncommitted worktree, not at the pin]`; whether a build without Mods
+`[verified]`; whether a build without Mods
 loads the plugin with the new `modules` key has not been run, see
 [GAPS](GAPS.md#native-panel-what-is-not-proven). Its contracts are
 under [Native worklog panel](CONTRACTS.md#native-worklog-panel).
-
-`[verified: uncommitted worktree, not at the pin]` marks a claim read from files
-that are new or changed in the working tree and not yet in any commit. Re-check
-and retag those when the change is committed and the docs are re-pinned.
 
 The classic hooks never call Outline and never call an MCP tool. It only emits static
 text that names the MCP server `[verified]`; resolving which tool prefix actually
@@ -74,10 +70,10 @@ This block does not own:
 | `scripts/persistence-state.sh` | Resolves the state directory, and implements `path`, `status`, `off`, `on` `[verified]` |
 | `scripts/stop-guard.sh` | Stop hook wrapper; always exits `0` `[verified]` |
 | `scripts/stop_guard.py` | Reads the transcript, decides whether to block, keeps a per-session marker `[verified]` |
-| `hooks/register.tsx` | Native panel: entry points, refresh, preview, Load, actions, the pane `[verified: uncommitted worktree, not at the pin]` |
-| `hooks/worklog-panel.ts` | Native panel: Outline result decoders, project scope, record sections, Load framing `[verified: uncommitted worktree, not at the pin]` |
-| `hooks/outline-result.ts` | Native MCP reads, including bounded recovery of host-saved responses from this session's tool-results directory `[verified: uncommitted worktree, not at the pin]` |
-| `types/index.d.ts` | Native panel: the `worklog-persist.panel` state contract `[verified: uncommitted worktree, not at the pin]` |
+| `hooks/register.tsx` | Native panel: entry points, refresh, preview, Load, actions, the pane `[verified]` |
+| `hooks/worklog-panel.ts` | Native panel: Outline result decoders, project scope, record sections, Load framing `[verified]` |
+| `hooks/outline-result.ts` | Native MCP reads, including bounded recovery of host-saved responses from this session's tool-results directory `[verified]` |
+| `types/index.d.ts` | Native panel: the `worklog-persist.panel` state contract `[verified]` |
 
 ## Why it depends on packaging and persistence-protocol
 
@@ -92,7 +88,7 @@ server whose prefix resolution belongs to the skill; that ties this block to
 `persistence-protocol` `[verified]`. The native panel runs that block's resolver
 (`scripts/resolve-context.sh`) for identity and its slash commands for every
 lifecycle action, and opens from `commands/show.md`
-`[verified: uncommitted worktree, not at the pin]`.
+`[verified]`.
 
 ## Flow
 
