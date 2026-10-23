@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: CONTRACTS
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: b92a027
+verified_on: 2026-10-23
 ---
 
 # Contracts
@@ -27,6 +27,14 @@ eight short pointers].
 enforcement: `tests/test_structure.sh::"all 8 verb commands present"` checks
 only that the eight files exist, not that their bodies still defer to the
 skill (test suite only).
+
+`commands/show.md` is a ninth file and not a verb: it never runs the skill, and
+its body forbids any Outline call (`commands/show.md::"Do not call any Outline tool"`)
+[verified]. The native panel runs the eight verbs above by name through
+`$.command.run`, so renaming a command file removes that action from the panel.
+
+enforcement: `tests/worklog-panel.test.tsx::"actions come from the command list; a missing one is not offered"`
+  (test suite only, fixtures).
 
 ---
 

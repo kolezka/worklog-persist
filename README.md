@@ -124,6 +124,35 @@ hook's context injection is affected by known Claude Code bugs
 ([#16538](https://github.com/anthropics/claude-code/issues/16538),
 [#88086](https://github.com/anthropics/claude-code/issues/88086)).
 
+## Native worklog panel
+
+In a Claude Code build with Mods, `/worklog-persist:show` (or the prompt
+`show worklog panel`) opens a pane beside the chat for the current project only:
+its task records, the status and next action of the task you pick, that task's
+checkpoints and handoffs, and a title filter over the project's documents.
+
+- Pick a task in **Tasks** to make it active. The pane lists task records, not
+  individual chat sessions; it does not guess which task the conversation belongs to.
+- A pinned status line below the prompt shows `Task: <task>`. An open document
+  adds `Preview: <document>`, without changing the active task. The line clears
+  while the project scope is unresolved and follows task or document selection.
+- Previewing a document shows it in the pane only. **Load into session** adds it
+  to the conversation as untrusted reference data, with its Outline id.
+- The action buttons run this plugin's own commands (`load`, `start`,
+  `checkpoint`, `handoff`, `complete`, `dry-run`, `setup`, `off`). A dispatched
+  command is not a confirmed write; the pane refreshes from Outline when the turn
+  ends.
+- The pane only reads Outline. It never creates a folder or a record, and it
+  shows a read failure as a failure, not as an empty project.
+
+The panel is a hooks module (`hooks/register.tsx`). It needs a Claude Code build
+with Mods and the module loaded. A development copy in a session's mods folder
+loads only after the person running that session agrees to it. What installing or
+updating the plugin does to the module has not been checked. The lifecycle
+commands and the classic hooks are unchanged by the panel, but loading this
+plugin in a build without Mods has not been tested. Details:
+[`docs/session-hook/`](docs/session-hook/README.md).
+
 ## Persisted record schema
 
 Structured state, not a transcript. The task record holds current state only,
@@ -215,6 +244,7 @@ bash scripts/resolve-context.sh my-task-slug
 make check    # everything offline: pytest suite, shell suites, structure check
 make lint     # shellcheck at warning severity
 make live     # opt-in reachability check against the Outline server in .mcp.json
+make test-native   # native panel: claude plugin validate + claude plugin test (needs claude)
 ```
 
 Offline tests use local fixtures and mocks; the live test is opt-in and needs no
@@ -231,5 +261,5 @@ enforces them.
 ## Scope boundary
 
 This plugin covers Outline persistence only: the skill, its SessionStart rule,
-the slash commands and the `outline` MCP entry. It has no reflection, no graph
+the slash commands, the native worklog panel and the `outline` MCP entry. It has no reflection, no graph
 sync and no curriculum. It reads no config but its own.

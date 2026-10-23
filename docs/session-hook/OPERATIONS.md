@@ -1,8 +1,8 @@
 ---
 block: session-hook
 doc: OPERATIONS
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: b92a027
+verified_on: 2026-10-23
 ---
 
 # Operations
@@ -142,3 +142,27 @@ table above, then pipe the session's Stop-hook JSON into
 `scripts/stop-guard.sh` by hand with the same environment. Do not delete the
 session marker to force a block; set `WORKLOG_STOP_COOLDOWN_MIN=0` for that run
 instead.
+
+## Native worklog panel
+
+Open with `/worklog-persist:show` or the prompt `show worklog panel`, in a build
+with Mods and the module loaded `[verified]`. A development copy in a
+session's mods folder loads only after the person running that session agrees.
+What installing or updating the plugin does to the module has not been checked.
+To try it from a checkout: `claude --plugin-dir <checkout>`.
+
+Its state is session state (`types/index.d.ts::"worklog-persist"`), not a file:
+`/clear` empties it, and a new session starts empty. There is no kill switch of
+its own; the off switch above is shown in the pane and does not stop reads,
+because the panel only reads.
+
+**The pane says the Outline MCP server is not connected.** Neither tool prefix
+has all three read tools in `$.tool.list()`. Check `/mcp`, then Retry.
+
+**The pane shows "Could not read Outline: ...".** The quoted reason is the
+decoder's or the server's. Do not treat it as an empty project. Run
+`/worklog-persist:load` to compare with what the agent reads.
+
+**An action stays "dispatched".** It waits for the session to go idle and run
+the command; the state moves on when that turn completes. Check the transcript,
+then Refresh.

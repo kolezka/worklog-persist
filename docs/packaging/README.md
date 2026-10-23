@@ -1,8 +1,8 @@
 ---
 block: packaging
 doc: README
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: b92a027
+verified_on: 2026-10-23
 owns: [.claude-plugin/, .mcp.json, install.sh, Makefile, pyproject.toml, uv.lock, .gitignore]
 depends_on: [session-hook, persistence-protocol]
 ---
@@ -22,11 +22,11 @@ state file. Those live in [session-hook](../session-hook/README.md) and
 
 | Path | What it is |
 |---|---|
-| `.claude-plugin/plugin.json` | Plugin identity: name `worklog-persist`, version, description, license [verified] |
+| `.claude-plugin/plugin.json` | Plugin identity: name `worklog-persist`, version, description, license [verified]; `types` names the native panel's state contract [verified] |
 | `.claude-plugin/marketplace.json` | Local marketplace `worklog-persist-marketplace` listing the plugin with `source: "./"` [verified] |
 | `.mcp.json` | The one bundled MCP server, `outline`, an HTTP endpoint with env-only headers [verified] |
 | `install.sh` | Dry-run-by-default installer: register, install, enable, disable, uninstall, `--check` [verified] |
-| `Makefile` | `help`, `test`, `test-sh`, `lint`, `check`, `live`, `plan`, `install` targets [verified] |
+| `Makefile` | `help`, `test`, `test-sh`, `lint`, `check`, `live`, `plan`, `install` targets [verified]; `test-native`, `typecheck-native` [verified] |
 | `pyproject.toml` | Pins the test runner only; `tool.uv.package = false` [verified] |
 | `uv.lock` | Resolved dev dependency versions for `uv run` [verified] |
 | `.gitignore` | Excludes caches, the venv, and generated tdd-guard data [verified] |

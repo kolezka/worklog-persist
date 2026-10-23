@@ -13,5 +13,6 @@
     "knowledge-base",
     "session-state",
     "handoff"
-  ]
+  ],
+  "types": "./types/index.d.ts"
 }

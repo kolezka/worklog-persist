@@ -44,6 +44,23 @@ lint: ## shellcheck every shell file, at warning severity
 check: test test-sh ## Everything offline: both suites plus the structure check
 	./install.sh --check
 
+.PHONY: test-native
+test-native: ## Native panel: validate the plugin, run its engine tests (needs the claude CLI)
+	@command -v claude >/dev/null || { echo "FAIL: claude CLI not found; native tests did not run"; exit 1; }
+	claude plugin validate .
+	claude plugin test .
+
+.PHONY: typecheck-native
+typecheck-native: ## Type-check hooks/ and tests/ against TYPES=<claude-code.d.ts>
+	@test -f "$(TYPES)" || { echo "FAIL: set TYPES to this build's claude-code.d.ts (see docs/verification/OPERATIONS.md)"; exit 1; }
+	@command -v pnpm >/dev/null || { echo "FAIL: pnpm not found; the type-check did not run"; exit 1; }
+	@dir=$$(mktemp -d) && root=$$(pwd) && printf '%s\n' \
+	  '{"compilerOptions":{"target":"es2023","lib":["es2023"],"types":[],"module":"esnext",' \
+	  '"moduleResolution":"bundler","strict":true,"noUncheckedIndexedAccess":true,"noEmit":true,' \
+	  '"skipLibCheck":true,"jsx":"react","jsxFactory":"h","jsxFragmentFactory":"Fragment"},' \
+	  "\"files\":[\"$(TYPES)\"],\"include\":[\"$$root/hooks\",\"$$root/types\",\"$$root/tests/*.tsx\"]}" \
+	  > "$$dir/tsconfig.json" && pnpm --package=typescript@5.6.3 dlx tsc -p "$$dir/tsconfig.json"
+
 .PHONY: live
 live: ## Opt-in reachability check against the real Outline endpoint
 	WORKLOG_PERSIST_LIVE=1 bash tests/test_live_outline.sh

@@ -1,5 +1,8 @@
 {
   "description": "Injects the Outline durable-memory rule at session start, and blocks Stop once when a commit, push, PR or release has not been persisted. Both are gated by WORKLOG_HOOK_OFF and the persisted off-state file, and skip silently when disabled.",
+  "modules": [
+    "./register.tsx"
+  ],
   "hooks": {
     "SessionStart": [
       {

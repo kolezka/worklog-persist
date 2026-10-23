@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: GAPS
-verified_against: 2d0b8af
-verified_on: 2026-10-18
+verified_against: b92a027
+verified_on: 2026-10-23
 ---
 
 # Gaps
@@ -136,3 +136,15 @@ file existence. None of them, nor anything else found at this pin, drives a
 against a real or mocked Outline. `tests/test_live_outline.sh` exists and is
 closest to this, but it is owned by [`verification`](../verification/README.md);
 see that block's docs for what it actually proves.
+
+## The pinned protocol rules from 0.3.2's follow-up are not described here yet
+
+The pinned source includes three additional skill rules: compacting a record
+over about 4,000 characters into a `history before compaction` child
+(`skills/worklog-persist/SKILL.md::"history before compaction"`), the fixed
+`Tasks` flag line format (`skills/worklog-persist/SKILL.md::"(<flag>, <YYYY-MM-DD>)"`),
+and never creating a root collection that only the default names
+(`scripts/resolve_context.py::"root_source"`) [verified]. The skill and
+`tests/test_structure.sh::"a default-only root collection is asked about, not created"`
+carry them [verified]; this block's CONTRACTS and INVARIANTS do not restate them
+yet.
