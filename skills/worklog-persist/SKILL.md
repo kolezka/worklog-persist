@@ -200,13 +200,15 @@ Last updated: YYYY-MM-DD
 
 ## Objective          objective and acceptance criteria
 ## Status             one of active, blocked, handoff, complete
-## Decisions          current decisions, one line each
+## Decisions          one per line: <decision>, because <reason>
 ## Verified facts     with evidence; inferred or unverified items labelled as such
 ## Blockers           or "None"
 ## Next action        one concrete step
 ## Checkpoints        links to the latest 5 checkpoint docs, newest first
 ## Related            [[doc-title]] links to Spec, Plan and other docs
 ```
+
+Example decision: `Used a checklist, because it keeps the handoff clear.`
 
 Each section is a summary that is **rewritten**, not grown. When a fact, decision
 or blocker is superseded, replace it; the old wording lives in the checkpoint
@@ -232,9 +234,9 @@ Each checkpoint, handoff or completion writes one short child document under the
 record: `create_document` with `parentDocumentId` = the record's id and title
 `<YYYY-MM-DD> <short title>` (for example `2026-10-16 stop guard tests green`).
 Its body holds what happened at that point: changed files, commands run and their
-decoded outcomes, decisions taken, and a back-link `Record: [[<slug>]]`. Keep it
-short; it is a log entry, not a second record. Never append checkpoint text to the
-record itself.
+decoded outcomes, decisions taken as `<decision>, because <reason>`, and a back-link
+`Record: [[<slug>]]`. Keep it short; it is a log entry, not a second record. Never
+append checkpoint text to the record itself.
 
 ### Writing cheaply
 
