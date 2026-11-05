@@ -3,7 +3,7 @@ block: packaging
 doc: README
 verified_against: fd97276
 verified_on: 2026-11-05
-owns: [.claude-plugin/, .mcp.json, install.sh, Makefile, pyproject.toml, uv.lock, .gitignore]
+owns: [.claude-plugin/, .mcp.json, dsh/, install.sh, Makefile, pyproject.toml, uv.lock, .gitignore]
 depends_on: [session-hook, persistence-protocol]
 ---
 
@@ -30,6 +30,7 @@ state file. Those live in [session-hook](../session-hook/README.md) and
 | `pyproject.toml` | Pins the test runner only; `tool.uv.package = false` [verified] |
 | `uv.lock` | Resolved dev dependency versions for `uv run` [verified] |
 | `.gitignore` | Excludes caches, the venv, and generated tdd-guard data [verified] |
+| `dsh/` | DeepSeek Harness bundle: maps the skill, the commands (as `/wl-<name>`, `show` excluded) and both hooks onto DSH events through the vendored `claude-compat.js`; `cordis.patch.yml` carries the `outline` MCP row, disabled by default [verified] |
 
 ## Why the dependencies
 
