@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: CONTRACTS
-verified_against: b92a027
-verified_on: 2026-10-23
+verified_against: fd97276
+verified_on: 2026-11-05
 ---
 
 # Contracts
@@ -313,8 +313,15 @@ sections, and a write is checked from the write response, not by fetching again
 [verified]. A retried checkpoint with the same title updates the existing child
 (`skills/worklog-persist/SKILL.md::"update that child"`) [verified].
 
-enforcement: convention. Nothing measures the record size or rejects an appended
-history section; the rule is prompt text only.
+Each Decisions line reads `<decision>, because <reason>`, one per line, both in
+the record and in the checkpoint child
+(`skills/worklog-persist/SKILL.md::"<decision>, because <reason>"`,
+`commands/checkpoint.md::"<decision>, because <reason>"`,
+`commands/start.md::"<decision>, because <reason>"`) [verified].
+
+enforcement: convention. Nothing measures the record size, rejects an appended
+history section, or checks that a decision line carries a reason; the rule is
+prompt text only.
 
 ---
 
