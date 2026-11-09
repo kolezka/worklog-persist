@@ -1,8 +1,8 @@
 ---
 block: session-hook
 doc: CONTRACTS
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a572e2e
+verified_on: 2026-11-09
 ---
 
 # Contracts
@@ -153,7 +153,7 @@ enforcement: `tests/test_offswitch.sh` sets `XDG_STATE_HOME` to an isolated
   temp directory for the whole suite, which only works if `state_dir()` actually
   honors that variable `[verified]`.
 
-### `WORKLOG_HOOK_OFF=1` overrides the marker file, in both directions
+### `WORKLOG_HOOK_OFF=1` forces off regardless of the marker file; it cannot force on
 
 `scripts/persistence-state.sh::is_off()` checks
 `scripts/persistence-state.sh::"WORKLOG_HOOK_OFF"` before it checks the marker
@@ -397,7 +397,7 @@ The action buttons are the verbs `$.command.list()` reports as
 listed is named as unavailable and not offered. `hooks/register.tsx::runAction()`
 calls `$.command.run` with the chosen arguments: the active task's slug for
 `load`, `checkpoint`, `handoff`, `complete` and `dry-run`, a typed slug for
-`start`, `on|off|status` for `off`, nothing for `setup`. A resolved
+`start`, `on|off|status` for `off`; `setup` forwards any free text (`hooks/register.tsx::argsError`). A resolved
 `$.command.run` is shown as dispatched and "not confirmed as written".
 
 enforcement: `tests/worklog-panel.test.tsx::"actions come from the command list; a missing one is not offered"`,

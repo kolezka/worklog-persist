@@ -1,8 +1,8 @@
 ---
 block: session-hook
 doc: OPERATIONS
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a572e2e
+verified_on: 2026-11-09
 ---
 
 # Operations
@@ -24,7 +24,7 @@ Claude Code runs `bash "${CLAUDE_PLUGIN_ROOT}/scripts/stop-guard.sh"` at the end
 every turn (`hooks/hooks.json::"stop-guard.sh"`) `[verified]`. To test it by
 hand, pipe a Stop-hook JSON into it, as `tests/test_stop_guard.sh::input()` does.
 Set `CLAUDE_CODE_SESSION_ATTENDED=1`, or unset both it and
-`CLAUDE_CODE_ENTRYPOINT`. A `0`, or an `sdk-*` entrypoint with no attended flag,
+`CLAUDE_CODE_ENTRYPOINT`. A `0`, or an `sdk-cli`, `sdk-ts` or `sdk-py` entrypoint with no attended flag,
 makes it allow every stop (`scripts/stop_guard.py::is_unattended()`) `[verified]`. A shell
 started from an interactive Claude Code session already has `1`; what a shell
 started from `claude -p` gets was not checked
@@ -78,7 +78,7 @@ not the same layer:
    This is what the `/off` slash command wraps
    (`persistence-protocol`, one sentence and a link:
    [`../persistence-protocol/OPERATIONS.md`](../persistence-protocol/OPERATIONS.md)).
-   Only this hook's output is affected; the skill and all eight commands still
+   Only the SessionStart reminder and the Stop guard are silenced (`scripts/stop_guard.py::persistence_is_off()`); the skill and the manual lifecycle commands still
    run `[verified]`.
 3. **`./install.sh --apply --disable`**, which runs `claude plugin disable` on
    the whole plugin (`packaging`, see

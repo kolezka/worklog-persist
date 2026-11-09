@@ -1,8 +1,8 @@
 ---
 block: verification
 doc: CONTRACTS
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a572e2e
+verified_on: 2026-11-09
 ---
 
 # Contracts
@@ -18,7 +18,8 @@ suite promises not to touch, and how a regression fix is expected to ship. See
 ### `make test` runs the Python suite only
 
 `make test` runs `env -u FORCE_COLOR uv run pytest -q`, which collects
-`tests/test_redact.py` and `tests/test_docs_layout.py`. [verified] It does not run
+`tests/test_redact.py`, `tests/test_docs_layout.py` and, uncommitted at HEAD a572e2e,
+`tests/test_search_dates.py` (`pyproject.toml::testpaths`). [verified] It does not run
 any `tests/*.sh` file: `Makefile::"Not collected by pytest"` is the comment
 explaining why a shell suite needs a separate target. [verified]
 
@@ -39,8 +40,9 @@ enforcement: `Makefile::test-sh`
 
 `make check` runs `test`, then `test-sh`, then `install.sh --check`, and nothing
 else. [verified] `Makefile::"Everything offline: both suites plus the structure check"`
-is its own description of that scope. [verified] `tests/test_live_outline.sh` is
-never part of `check`. [verified]
+is its own description of that scope. [verified] `tests/test_live_outline.sh` is not a named step of
+`check`, but `Makefile::test-sh` runs every `tests/*.sh`, so `check` executes it and it
+skips with exit 0 unless `WORKLOG_PERSIST_LIVE=1` is exported. [verified]
 
 enforcement: `Makefile::check`
 
@@ -71,8 +73,8 @@ enforcement: `Makefile::lint`
 directly. [verified] The script itself refuses to do anything unless
 `tests/test_live_outline.sh::"WORKLOG_PERSIST_LIVE"` is set to `1`, printing a
 `SKIP:` line and exiting `0` otherwise. [verified] Running it through `make live`
-still requires `OUTLINE_API_TOKEN` in the environment, or the script aborts on
-its own precondition check before any network call. [verified]
+still requires `OUTLINE_API_TOKEN` and `OUTLINE_MCP_URL`; the script aborts on its own
+`:?` checks before any network call if either is missing. [verified]
 
 enforcement: `Makefile::live` and `tests/test_live_outline.sh` (its own guard)
 

@@ -1,8 +1,8 @@
 ---
 block: verification
 doc: INVARIANTS
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a572e2e
+verified_on: 2026-11-09
 ---
 
 # Invariants

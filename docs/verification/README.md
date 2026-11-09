@@ -1,8 +1,8 @@
 ---
 block: verification
 doc: README
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a572e2e
+verified_on: 2026-11-09
 owns: [tests/]
 depends_on: [packaging, session-hook, persistence-protocol]
 ---
@@ -25,15 +25,18 @@ reader needs, but the installer and registration targets are documented in
 
 ## What this block is
 
-Nine suites, eight of them offline. Six are plain shell scripts run with `bash`,
+Ten suites, nine of them offline. Six are plain shell scripts run with `bash`,
 not collected by `pytest`: `Makefile::"Not collected by pytest"` is the comment
-that explains why `make test` alone would miss them. [verified] Two are `pytest`
-modules: `tests/test_redact.py` and `tests/test_docs_layout.py`. [verified] The
-ninth, `tests/test_live_outline.sh`, is opt-in and touches a real network
-endpoint; it never runs as part of `Makefile::"Everything offline: both suites plus the structure check"`.
-[verified]
+that explains why `make test` alone would miss them. [verified] Three are `pytest`
+modules: `tests/test_redact.py`, `tests/test_docs_layout.py` and, uncommitted at
+HEAD a572e2e, `tests/test_search_dates.py` (offline subprocess tests of the date
+helper: calendar and rolling windows, DST, host upper bound, invalid input; no
+Outline retrieval or conversation storage) [verified at the working tree]. The
+tenth, `tests/test_live_outline.sh`, is opt-in and makes its network call only when
+`WORKLOG_PERSIST_LIVE=1`; `Makefile::test-sh` still runs it through the
+`tests/*.sh` loop, where it prints `SKIP:` and exits 0 [verified].
 
-A tenth suite, `tests/worklog-panel.test.tsx`, runs under `claude plugin test`
+An eleventh suite, `tests/worklog-panel.test.tsx`, runs under `claude plugin test`
 through `Makefile::test-native`, not through `make check`, because it needs the
 `claude` CLI. It drives the native panel's hooks and pane on the terminal and
 desktop surfaces with fixtures for Outline, processes and commands [verified].
@@ -57,8 +60,9 @@ flowchart TD
         H[test_stop_guard.sh] --> RH["stop-guard.sh"]
         E[test_redact.py] --> RE["redact.py"]
         F[test_docs_layout.py] --> RF["docs/ tree vs CONVENTIONS.md"]
+        S[test_search_dates.py] --> RS["search_dates.py (uncommitted)"]
     end
-    L[test_live_outline.sh] -->|"make live, opt-in,\nneeds OUTLINE_API_TOKEN"| O[("real Outline endpoint")]
+    L[test_live_outline.sh] -->|"make live, opt-in,\nneeds OUTLINE_API_TOKEN, OUTLINE_MCP_URL"| O[("real Outline endpoint")]
     N[worklog-panel.test.tsx] -->|"make test-native,\nneeds the claude CLI"| RN["hooks/register.tsx pane,\nfixture Outline"]
 ```
 

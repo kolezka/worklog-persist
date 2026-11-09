@@ -1,8 +1,8 @@
 ---
 block: verification
 doc: GAPS
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a572e2e
+verified_on: 2026-11-09
 ---
 
 # Gaps
@@ -36,18 +36,20 @@ question belongs to `session-hook`; see
 
 ## The tool-prefix check is a text match, not a runtime resolution
 
-`tests/test_structure.sh::"skill handles both MCP tool prefixes"` only greps the
-skill file for both `mcp__outline__*`-style prefixes and confirms neither is
-hardcoded as a `select:` target. [verified] It does not load the plugin into a
+`tests/test_structure.sh::"skill handles both MCP tool prefixes"` requires the
+skill to contain `mcp__plugin_worklog-persist_outline__` and fails if it contains
+`select:mcp__outline__`; it does not assert the user-scope prefix is named. [verified] It does not load the plugin into a
 real session and confirm which prefix the MCP tool loader actually resolves at
 runtime. That resolution behaviour is `persistence-protocol`'s; see
 [`../persistence-protocol/CONTRACTS.md`](../persistence-protocol/CONTRACTS.md).
 
 ## The live suite is deliberately excluded from the offline gate
 
-`Makefile::check` runs `test`, `test-sh` and `install.sh --check` only;
-`tests/test_live_outline.sh` is reachable solely through `Makefile::live` or a
-direct manual invocation, and both require `OUTLINE_API_TOKEN`. [verified] This
+`Makefile::check` runs `test`, `test-sh` and `install.sh --check`. The
+`tests/*.sh` loop in `test-sh` also executes `tests/test_live_outline.sh`, which skips
+with exit 0 unless `WORKLOG_PERSIST_LIVE=1`; a real call needs that flag plus
+`OUTLINE_API_TOKEN` and `OUTLINE_MCP_URL`. If a caller exports the flag, `make check`
+stops being offline. [verified] This
 means no CI run that only calls `make check` ever exercises a real Outline
 endpoint, so a change to the endpoint URL, the auth header shape, or the Cloudflare
 Access headers in `.mcp.json` can pass `make check` while being broken against the
@@ -83,3 +85,11 @@ that the real server answers in the decoded shapes, or that a dispatched command
 wrote anything [verified]. The tree fixture follows saved results of earlier
 sessions, not a server schema; see
 [`../session-hook/GAPS.md`](../session-hook/GAPS.md#native-panel-what-is-not-proven).
+
+## The date-search helper tests stop at the helper
+
+`tests/test_search_dates.py` proves the interval arithmetic of `scripts/search_dates.py`
+only. Whether the agent follows the skill's search step, and whether Outline or the host
+history answers as that step assumes, is unproven; see
+[`../persistence-protocol/CONTRACTS.md`](../persistence-protocol/CONTRACTS.md#date-search).
+The test and helper are uncommitted at HEAD a572e2e. [verified]

@@ -1,8 +1,8 @@
 ---
 block: session-hook
 doc: README
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a572e2e
+verified_on: 2026-11-09
 owns: [hooks/, types/, scripts/session-start.sh, scripts/persistence-state.sh, scripts/stop-guard.sh, scripts/stop_guard.py]
 depends_on: [packaging, persistence-protocol]
 ---
@@ -56,7 +56,7 @@ This block does not own:
   script this block owns (`persistence-protocol`, one sentence and a link, per
   `../CONVENTIONS.md`)
 - the plugin manifest, the marketplace entry, `.mcp.json`, or `install.sh`,
-  including the structural check that this block's two scripts exist on disk
+  including the structural check that the two scripts `session-start.sh` and `persistence-state.sh` exist on disk
   (`packaging`, see [`../packaging/CONTRACTS.md`](../packaging/CONTRACTS.md))
 - the test suites that exercise this block's files
   (`verification`, see [`../verification/README.md`](../verification/README.md))
@@ -79,9 +79,9 @@ This block does not own:
 
 `${CLAUDE_PLUGIN_ROOT}` in `hooks/hooks.json::"${CLAUDE_PLUGIN_ROOT}"` is an
 environment variable the plugin loader supplies, not something this block
-defines `[inferred]`, and `install.sh::check_structure()` fails the whole install
-if `scripts/session-start.sh` or `scripts/persistence-state.sh` is missing
-`[verified]`; that ties this block to `packaging`. The `/off` command
+defines `[inferred]`, and `install.sh --check` (`install.sh::check_structure()`) fails
+if `scripts/session-start.sh` or `scripts/persistence-state.sh` is missing; `--apply`
+does not run it `[verified]`; that ties this block to `packaging`. The `/off` command
 (`commands/off.md`) and the skill both shell out to
 `scripts/persistence-state.sh`, and the reminder text names the `outline` MCP
 server whose prefix resolution belongs to the skill; that ties this block to

@@ -1,8 +1,8 @@
 ---
 block: packaging
 doc: README
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a572e2e
+verified_on: 2026-11-09
 owns: [.claude-plugin/, .mcp.json, install.sh, Makefile, pyproject.toml, uv.lock, .gitignore]
 depends_on: [session-hook, persistence-protocol]
 ---
@@ -65,7 +65,7 @@ flowchart TD
   server entry, the tool-prefix mechanism, Makefile targets.
 - [`INVARIANTS.md`](INVARIANTS.md): what must stay true, and the defect each
   invariant blocks.
-- [`GAPS.md`](GAPS.md): the hardcoded Outline URL, the install-time cache
+- [`GAPS.md`](GAPS.md): the unvalidated `OUTLINE_MCP_URL`, the install-time cache
   question, and other unenforced edges.
 - [`OPERATIONS.md`](OPERATIONS.md): every entry point, uninstall, and stuck
   states.

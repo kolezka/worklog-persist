@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: DECISIONS
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a572e2e
+verified_on: 2026-11-09
 ---
 
 # Decisions
@@ -161,7 +161,7 @@ three-key fallback contract exactly as before; only the values changed to
 neutral placeholders (`"Worklog"` for `root_collection`) that name nothing
 about any real operator. An operator who was relying on the old default must
 now set `outline.root_collection` explicitly; see
-[`README.md`](../../README.md#install).
+[`README.md`](../../README.md#kb-structure-and-routing).
 
 ## Path root kept, overlay discovery dropped
 

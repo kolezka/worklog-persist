@@ -1,9 +1,9 @@
 ---
 block: persistence-protocol
 doc: README
-verified_against: fd97276
-verified_on: 2026-11-05
-owns: [skills/, commands/, scripts/resolve-context.sh, scripts/resolve_context.py, scripts/config-add.sh, scripts/config_add.py, scripts/redact.py]
+verified_against: a572e2e
+verified_on: 2026-11-09
+owns: [skills/, commands/, scripts/resolve-context.sh, scripts/resolve_context.py, scripts/config-add.sh, scripts/config_add.py, scripts/redact.py, scripts/search_dates.py]
 depends_on: [packaging]
 ---
 
@@ -25,9 +25,11 @@ SessionStart hook or the on/off state file either; that is
 ## Boundary
 
 Owned: `skills/worklog-persist/SKILL.md`, the eight lifecycle files in `commands/`
-and `commands/show.md`,
+and the read-only `commands/show.md` and `commands/search.md`,
 `scripts/resolve-context.sh`, `scripts/resolve_context.py`,
-`scripts/config-add.sh`, `scripts/config_add.py`, `scripts/redact.py`.
+`scripts/config-add.sh`, `scripts/config_add.py`, `scripts/redact.py` and
+`scripts/search_dates.py`. The latter normalizes read-only date-search bounds;
+retrieval remains host-tool driven. [verified]
 
 Also owned, though it lives outside the repo: the format of the plugin config
 file that the resolver reads and `config-add.sh` writes. See
@@ -40,16 +42,19 @@ and `hooks/` (session-hook), `tests/` (verification, cited here only as
 ## What it does
 
 `skills/worklog-persist/SKILL.md::"This skill is the operational contract"`
-[verified]. The eight commands
+[verified]. The eight lifecycle commands
 (`commands/load.md`, `commands/start.md`, `commands/checkpoint.md`,
 `commands/handoff.md`, `commands/complete.md`, `commands/dry-run.md`,
-`commands/off.md`, `commands/setup.md`) are thin entry points that each say "Run the worklog-persist
-skill's **\<verb\>** step", for example
+`commands/off.md`, `commands/setup.md`) are thin entry points. Six say "Run the
+worklog-persist skill's **\<verb\>** step", for example
 `commands/checkpoint.md::"Run the worklog-persist skill's **checkpoint** step."`
-[verified]. None of the eight command files names an `mcp__` tool prefix; only
+[verified]. `/dry-run` points at the skill's dry-run mode and `/off` runs
+`scripts/persistence-state.sh` without calling the skill [verified]. Two more
+files are read-only extras, `/show` and `/search` (see CONTRACTS). Within `skills/` and `commands/`, only
 `skills/worklog-persist/SKILL.md::"mcp__outline__*"` and
-`skills/worklog-persist/SKILL.md::"mcp__plugin_worklog-persist_outline__*"` do,
-so the dual-prefix contract lives in exactly one place [verified].
+`skills/worklog-persist/SKILL.md::"mcp__plugin_worklog-persist_outline__*"` name an
+`mcp__` prefix; the hooks and `scripts/stop_guard.py` hardcode both prefixes
+separately (owned by [session-hook](../session-hook/README.md)) [verified].
 
 Identity and the Outline address come from `scripts/resolve-context.sh`, which
 runs `scripts/resolve_context.py::main()` over git and the plugin's own YAML
@@ -75,10 +80,10 @@ flowchart LR
 
 | File | Holds |
 |---|---|
-| [`CONTRACTS.md`](CONTRACTS.md) | The command set, the dual MCP prefix, identity resolution, the config file and its writer, onboarding, redaction, record identity |
+| [`CONTRACTS.md`](CONTRACTS.md) | The command set, the dual MCP prefix, identity resolution, the config file and its writer, onboarding, redaction, record identity, date search |
 | [`INVARIANTS.md`](INVARIANTS.md) | Behaviours the skill text requires and what breaks without them |
 | [`GAPS.md`](GAPS.md) | Where only the model, not code, enforces the protocol |
-| [`OPERATIONS.md`](OPERATIONS.md) | The eight entry points, where identity and state come from, stuck states |
+| [`OPERATIONS.md`](OPERATIONS.md) | The eight lifecycle entry points plus `/show` and `/search`, where identity and state come from, stuck states |
 | [`DECISIONS.md`](DECISIONS.md) | Why the contract lives in one skill file, and other recorded choices |
 
 Read [`../CONVENTIONS.md`](../CONVENTIONS.md) and the block map in
