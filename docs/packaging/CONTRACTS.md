@@ -1,8 +1,8 @@
 ---
 block: packaging
 doc: CONTRACTS
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a679861
+verified_on: 2026-11-10
 ---
 
 # Contracts
@@ -165,8 +165,9 @@ enforcement: convention; no target checks that `uv.lock` is still current
 
 `.gitignore` excludes `` `.gitignore::"__pycache__/"` ``,
 `` `.gitignore::"*.pyc"` ``, `` `.gitignore::".pytest_cache/"` ``,
-`` `.gitignore::".venv/"` ``, and
-`` `.gitignore::".claude/tdd-guard/data/*.json"` `` [verified].
+`` `.gitignore::".venv/"` ``,
+`` `.gitignore::".claude/tdd-guard/data/*.json"` ``, and
+`` `.gitignore::"dsh/node_modules/"` ``, the adapter's Bun install [verified].
 
 enforcement: convention; nothing fails a commit that adds one of these paths
   with `git add -f`.

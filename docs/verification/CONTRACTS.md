@@ -1,8 +1,8 @@
 ---
 block: verification
 doc: CONTRACTS
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a679861
+verified_on: 2026-11-10
 ---
 
 # Contracts
@@ -18,7 +18,8 @@ suite promises not to touch, and how a regression fix is expected to ship. See
 ### `make test` runs the Python suite only
 
 `make test` runs `env -u FORCE_COLOR uv run pytest -q`, which collects
-`tests/test_redact.py` and `tests/test_docs_layout.py`. [verified] It does not run
+`tests/test_redact.py`, `tests/test_docs_layout.py` and `tests/test_dsh.py`.
+[verified] It does not run
 any `tests/*.sh` file: `Makefile::"Not collected by pytest"` is the comment
 explaining why a shell suite needs a separate target. [verified]
 
