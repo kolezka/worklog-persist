@@ -62,6 +62,43 @@ if they are already present, and never edits your `settings.json` or a shared
 `mcp.json` — the `claude` CLI manages its own registry, so unrelated marketplaces,
 plugins, MCP servers and hooks are left untouched.
 
+## DeepSeek Harness
+
+`dsh/` is a DeepSeek Harness (DSH) adapter for the same plugin tree. The Claude Code
+install above does not use it and does not change. The adapter imports its runtime
+from the published npm package `claude-plugin-dsh`, pinned to exactly `0.1.0` in
+`dsh/package.json` and locked in `dsh/bun.lock`. There is no vendored copy.
+
+Install the adapter's dependencies first, from a persistent checkout, with Bun and
+Node 20 or newer. Then add the adapter to a DSH profile:
+
+```sh
+cd /abs/path/to/worklog-persist/dsh && bun install --frozen-lockfile
+dsh plugin --profile <profile> add file:/abs/path/to/worklog-persist/dsh
+```
+
+Do not rely on `dsh plugin add` to install `claude-plugin-dsh` for you; that has
+not been checked. To check what the adapter registers without a DSH profile:
+
+```sh
+bun x claude-plugin-dsh@0.1.0 inspect /abs/path/to/worklog-persist
+```
+
+`inspect` imports the adapter's JavaScript, so run it only on a trusted checkout.
+Do not run the package's `sync` or `scaffold` commands on this adapter: in `0.1.0`
+they write a vendored `claude-compat.js`, which this adapter no longer uses. To move
+to a newer runtime, change the exact version in `dsh/package.json`, run
+`bun install` in `dsh/` to refresh `dsh/bun.lock`, then run `make test`.
+
+The adapter registers the skill, the lifecycle commands as `/wl-<name>`, and the
+`SessionStart` and `Stop` hooks. The native worklog panel and `/show` are Claude
+Code only. The runtime does not read `.mcp.json`. `dsh/cordis.patch.yml` carries an
+`outline` row for `@deepseek-ai/dsh-mcp-client` that ships disabled: enable
+`claude-compat-worklog-persist-outline` only when the profile has no `outline`
+server yet, and set `OUTLINE_MCP_URL`, `OUTLINE_API_TOKEN` and, if needed, the two
+`CF_ACCESS_CLIENT_*` variables above. The MCP client package must be available to
+the profile.
+
 ## Renamed from `outline-persist`
 
 | Old | New |

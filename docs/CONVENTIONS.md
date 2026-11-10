@@ -1,8 +1,8 @@
 ---
 block: _root
 doc: CONVENTIONS
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a679861
+verified_on: 2026-11-10
 ---
 
 # Conventions

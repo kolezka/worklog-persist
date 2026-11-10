@@ -5,3 +5,4 @@ __pycache__/
 .claude/tdd-guard/data/*.json
 .codegraph/
 graphify-out/cache/
+dsh/node_modules/

@@ -1,8 +1,8 @@
 ---
 block: verification
 doc: OPERATIONS
-verified_against: fd97276
-verified_on: 2026-11-05
+verified_against: a679861
+verified_on: 2026-11-10
 ---
 
 # Operations
@@ -16,6 +16,9 @@ trusting it. See [`CONTRACTS.md`](CONTRACTS.md) for what each target promises.
 ## Required tools
 
 - `bash`, for the six offline shell suites and the `test-sh` loop. [verified]
+- `bun` and `node`, for `tests/test_dsh.py`: it runs `bun install --frozen-lockfile`
+  in a temp copy of `dsh/`, so it needs the npm registry or a warm Bun cache.
+  [verified]
 - `git`, because `tests/test_install.sh` case 6 and 7 create a throwaway repo and
   a linked worktree with `git init`, `git worktree add` and `git commit`.
   [verified]
@@ -39,7 +42,7 @@ trusting it. See [`CONTRACTS.md`](CONTRACTS.md) for what each target promises.
 
 | Command | Runs |
 |---|---|
-| `make test` | `tests/test_redact.py`, `tests/test_docs_layout.py` |
+| `make test` | `tests/test_redact.py`, `tests/test_docs_layout.py`, `tests/test_dsh.py` |
 | `make test-sh` | `tests/test_structure.sh`, `tests/test_install.sh`, `tests/test_context.sh`, `tests/test_config_add.sh`, `tests/test_offswitch.sh`, `tests/test_stop_guard.sh` |
 | `make lint` | `shellcheck` on `install.sh`, `scripts/*.sh`, `tests/*.sh` |
 | `make check` | `test`, then `test-sh`, then `install.sh --check` |
@@ -57,6 +60,7 @@ bash tests/test_offswitch.sh
 bash tests/test_stop_guard.sh
 uv run pytest -q tests/test_redact.py
 uv run pytest -q tests/test_docs_layout.py
+uv run pytest -q tests/test_dsh.py
 ```
 
 A single test function inside the Python suites takes `pytest -k`, for example
