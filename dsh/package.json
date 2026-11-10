@@ -10,7 +10,7 @@
   },
   "files": [
     "index.js",
-    "claude-compat.js",
+    "bun.lock",
     "cordis.patch.yml",
     "locale/*.json"
   ],
@@ -18,5 +18,8 @@
     "bundle": {
       "patch": "./cordis.patch.yml"
     }
+  },
+  "dependencies": {
+    "claude-plugin-dsh": "0.1.0"
   }
 }
