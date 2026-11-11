@@ -142,11 +142,12 @@ and fails with a message when the `claude` CLI is missing instead of skipping
 `make typecheck-native TYPES=<claude-code.d.ts>` type-checks `hooks/`, `types/`
 and the native tests against that build's declarations with
 `pnpm --package=typescript@5.6.3 dlx tsc`, and fails when `TYPES` is not a file
-or `pnpm` is not on `PATH` (`` `Makefile::"pnpm not found; the type-check did not run"` ``) [verified]. Neither is part of `make check`, because both
-need the `claude` CLI and `check` does not.
+or `pnpm` is not on `PATH` (`` `Makefile::"pnpm not found; the type-check did not run"` ``) [verified]. Neither is part of `make check`. `test-native` needs the
+`claude` CLI; `typecheck-native` needs `pnpm`, network access for `dlx` and a `TYPES` file
+[inferred from the two recipes].
 
-enforcement: `` `Makefile::help` `` lists every target from its own `##`
-  comments, so an undocumented target cannot silently exist; there is no test
+enforcement: convention. `` `Makefile::help` `` prints only targets that carry a `##`
+  comment, so an undocumented target is omitted, not rejected; there is no test
   that runs every target end to end.
 
 ## Python toolchain

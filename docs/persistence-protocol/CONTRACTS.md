@@ -18,17 +18,18 @@ format.
 `skills/worklog-persist/SKILL.md::"This skill is the operational contract"`
 [verified]. The eight command files exist and each names its verb: `load`,
 `start`, `checkpoint`, `handoff`, `complete`, `dry-run`, `off`, `setup`
-[verified]. Each command body says "Run the worklog-persist skill's" plus its own
-step, for instance `commands/handoff.md::"Run the worklog-persist skill's"`
-[verified], rather than restating the lifecycle rules, so a rule only needs to
-change in `skills/worklog-persist/SKILL.md` once [inferred: one canonical file,
-eight short pointers].
+[verified]. Six bodies say "Run the worklog-persist skill's" plus their own step, for
+instance `commands/handoff.md::"Run the worklog-persist skill's"` [verified];
+`commands/dry-run.md::"in **dry-run** mode"` points at the skill's dry-run mode,
+and `/off` runs `scripts/persistence-state.sh` without the skill [verified].
+Rules stay in `skills/worklog-persist/SKILL.md`, so a rule only needs to change
+there once [inferred: one canonical file, short pointers].
 
 enforcement: `tests/test_structure.sh::"all 8 verb commands present"` checks
 only that the eight files exist, not that their bodies still defer to the
 skill (test suite only).
 
-`commands/show.md` is a ninth file and not a verb: it never runs the skill, and
+`commands/show.md` and `commands/search.md` are extra files, not lifecycle verbs. `/show`: it never runs the skill, and
 its body forbids any Outline call (`commands/show.md::"Do not call any Outline tool"`)
 [verified]. The native panel runs the eight verbs above by name through
 `$.command.run`, so renaming a command file removes that action from the panel.
@@ -79,7 +80,7 @@ Invoked as `skills/worklog-persist/SKILL.md::"bash ${CLAUDE_PLUGIN_ROOT}/scripts
 [verified]. `scripts/resolve_context.py::main()` prints one JSON object with
 these keys: `repo`, `repo_root`, `project`, `world`, `world_source`,
 `candidate_worlds`, `ignored`, `branch`, `worktree`, `task_slug`,
-`root_collection`, `global_collection`, `archive_collection`, `kb_path`,
+`root_collection`, `root_collection_source` (`config` or `default`), `global_collection`, `archive_collection`, `kb_path`,
 `tasks_path`, `record_path`, `config`, `config_path`, `config_error` [verified].
 
 - `repo_root` is the main checkout, also from a linked worktree
@@ -141,7 +142,7 @@ does not crash [verified]. The shape it reads:
   a neutral placeholder (`"Worklog"`, `"Claude's Notebook"`, `"Archive"`), never
   one operator's real collection name [verified]. An operator who wants their
   own naming sets `outline.root_collection` (and the other two keys, if wanted)
-  in their config; see [`README.md`](../../README.md#install) for the exact
+  in their config; see [`README.md`](../../README.md#kb-structure-and-routing) for the exact
   block to add.
 - `worlds:`, a list of `{name, projects}`, where `projects` is a list of
   `{name, repo, kb_folder?}`. `repo` is matched after `~` expansion and symlink
@@ -322,6 +323,43 @@ the record and in the checkpoint child
 enforcement: convention. Nothing measures the record size, rejects an appended
 history section, or checks that a decision line carries a reason; the rule is
 prompt text only.
+
+---
+
+## Date search
+
+`commands/search.md` (`/search`, `commands/search.md::"Read-only."`) runs the read-only
+search step in `skills/worklog-persist/SKILL.md::"## Search by date (read-only)"`.
+It covers Outline work records and available host conversations, adds no lifecycle
+verb and writes no records. [verified at the working tree, uncommitted: HEAD
+a572e2e has no `commands/search.md`]
+
+enforcement: convention (no suite checks the command or skill text; `tests/test_structure.sh`
+asserts only the eight verbs).
+
+`scripts/search_dates.py::normalize()` returns the object that `scripts/search_dates.py::main()` prints as JSON: `from` (inclusive) and
+`until` (exclusive) in UTC, `until_inclusive_ms` (the greatest whole epoch millisecond
+below `until`, for hosts whose bounds are inclusive), `end_exclusive`, `timezone`,
+`date_from` and `date_to`. Calendar day and range endpoints are inclusive in the given IANA
+zone; `--last-days N` is an elapsed N times 24 hours ending at `--now` or the current
+instant. The default zone is explicit UTC, never guessed. Invalid, conflicting or reversed
+input exits 2 and prints no bounds. [verified at the working tree, uncommitted]
+
+enforcement: `tests/test_search_dates.py::test_inclusive_day_across_dst()`,
+`tests/test_search_dates.py::test_inclusive_range()`,
+`tests/test_search_dates.py::test_last_seven_days_is_elapsed_time()`,
+`tests/test_search_dates.py::test_upper_bound_is_next_local_day_in_autumn()`,
+`tests/test_search_dates.py::test_default_timezone_is_explicit_utc()`,
+`tests/test_search_dates.py::test_inclusive_host_upper_bound_never_selects_exclusive_boundary()` and
+`tests/test_search_dates.py::test_bad_input_fails_without_bounds()` (offline, in `make test`).
+
+The skill separates checkpoint day precision (title date), task `updatedAt` instants and
+message event times, and requires each source to be reported as searched, partial or
+unavailable. [verified at the working tree, uncommitted]
+
+enforcement: convention. The helper tests do not prove Outline retrieval or host history
+availability; the agent must discover the real tool schemas and inspect returned content
+at run time.
 
 ---
 

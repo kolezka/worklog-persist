@@ -22,7 +22,7 @@ trusting it. See [`CONTRACTS.md`](CONTRACTS.md) for what each target promises.
 - `git`, because `tests/test_install.sh` case 6 and 7 create a throwaway repo and
   a linked worktree with `git init`, `git worktree add` and `git commit`.
   [verified]
-- `python3`, used directly by every shell suite for JSON parsing (for example
+- `python3`, used directly by every shell suite except `tests/test_install.sh` for JSON parsing (for example
   `tests/test_context.sh::field()`) and by `install.sh --check`. [verified]
 - PyYAML for that same `python3`: the resolver and config-writer suites read
   and write YAML configs, and `tests/test_config_add.sh` imports `yaml` itself.
@@ -42,8 +42,8 @@ trusting it. See [`CONTRACTS.md`](CONTRACTS.md) for what each target promises.
 
 | Command | Runs |
 |---|---|
-| `make test` | `tests/test_redact.py`, `tests/test_docs_layout.py`, `tests/test_dsh.py` |
-| `make test-sh` | `tests/test_structure.sh`, `tests/test_install.sh`, `tests/test_context.sh`, `tests/test_config_add.sh`, `tests/test_offswitch.sh`, `tests/test_stop_guard.sh` |
+| `make test` | `tests/test_redact.py`, `tests/test_docs_layout.py`, `tests/test_dsh.py`, `tests/test_search_dates.py` |
+| `make test-sh` | `tests/test_structure.sh`, `tests/test_install.sh`, `tests/test_context.sh`, `tests/test_config_add.sh`, `tests/test_offswitch.sh`, `tests/test_stop_guard.sh`, and `tests/test_live_outline.sh` as a skip |
 | `make lint` | `shellcheck` on `install.sh`, `scripts/*.sh`, `tests/*.sh` |
 | `make check` | `test`, then `test-sh`, then `install.sh --check` |
 | `make test-native` | `claude plugin validate .`, then `claude plugin test .` (`tests/worklog-panel.test.tsx`) [verified] |
@@ -60,6 +60,7 @@ bash tests/test_offswitch.sh
 bash tests/test_stop_guard.sh
 uv run pytest -q tests/test_redact.py
 uv run pytest -q tests/test_docs_layout.py
+uv run pytest -q tests/test_search_dates.py
 uv run pytest -q tests/test_dsh.py
 ```
 
@@ -75,7 +76,7 @@ A single test function inside the Python suites takes `pytest -k`, for example
 it to any script that runs unattended or in CI. [inferred, from its exclusion in
 `Makefile::check`]
 
-1. Set `OUTLINE_API_TOKEN` in your own shell environment, never in a tracked file.
+1. Set `OUTLINE_API_TOKEN` and `OUTLINE_MCP_URL` in your own shell environment, never in a tracked file.
    Per `docs/CONVENTIONS.md::"No world names, no credentials"`, no committed file
    may hold the value. [verified]
 2. Run `make live`, which sets

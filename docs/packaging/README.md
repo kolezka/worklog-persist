@@ -66,7 +66,7 @@ flowchart TD
   server entry, the tool-prefix mechanism, Makefile targets.
 - [`INVARIANTS.md`](INVARIANTS.md): what must stay true, and the defect each
   invariant blocks.
-- [`GAPS.md`](GAPS.md): the hardcoded Outline URL, the install-time cache
+- [`GAPS.md`](GAPS.md): the unvalidated `OUTLINE_MCP_URL`, the install-time cache
   question, and other unenforced edges.
 - [`OPERATIONS.md`](OPERATIONS.md): every entry point, uninstall, and stuck
   states.

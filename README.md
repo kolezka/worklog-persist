@@ -140,6 +140,21 @@ blocks at most once per piece of work, never in a non-interactive run or for an
 ignored repo, and stays quiet for 90 minutes after a block or an Outline write.
 Set `WORKLOG_STOP_COOLDOWN_MIN` to change that window (`0` turns it off).
 
+## Search by date
+
+Use `/search --on 2026-11-09`, `/search --from 2026-11-01 --to 2026-11-09`,
+or `/search --last-days 7 --timezone Europe/Warsaw`, with optional search text.
+The search is read-only and covers the current project's Outline task records,
+checkpoint history and conversation history exposed by the host.
+
+Calendar ranges include both dates. Last 7 days is an elapsed 168-hour window.
+Pass an IANA timezone for calendar dates. The agent asks when the user's zone is
+unknown; the standalone helper defaults to UTC. Results distinguish checkpoint
+dates, document updates and message times. Unavailable sources and incomplete
+results are reported, not hidden as empty matches. Conversation date-only browsing
+depends on the host's history interface. A DSH build with bounded empty-query
+support accepts `query: ""` with time bounds; older builds require search text.
+
 ## Commands
 
 Eight slash commands map to the persistence lifecycle:

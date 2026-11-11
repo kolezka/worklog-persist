@@ -124,7 +124,7 @@ def test_adapter_registers_skill_commands_and_hooks_with_real_bodies(installed):
     dsh, seen = installed
     _assert_installed_runtime(seen, dsh)
     assert seen["name"] == "claude-compat-worklog-persist"
-    expected = ["checkpoint", "complete", "dry-run", "handoff", "load", "off", "setup", "start"]
+    expected = ["checkpoint", "complete", "dry-run", "handoff", "load", "off", "search", "setup", "start"]
     assert sorted(seen["commands"]) == [f"wl-{stem}" for stem in expected]
     for stem in expected:
         text = seen["commands"][f"wl-{stem}"]

@@ -47,9 +47,9 @@ non-interactive), which calls `` `install.sh::"claude plugin uninstall"` ``
 `./install.sh --apply --disable` turns the whole plugin off at the `claude`
 CLI level. This is a different, coarser switch than the automatic-persistence
 off switch documented in
-[`session-hook/OPERATIONS.md`](../session-hook/OPERATIONS.md), which disables
-only the SessionStart reminder without uninstalling or disabling the plugin
-itself.
+[`session-hook/OPERATIONS.md`](../session-hook/OPERATIONS.md), which silences
+both hooks, the SessionStart reminder and the Stop guard, without uninstalling or
+disabling the plugin itself `[verified: scripts/stop_guard.py::persistence_is_off()]`.
 
 ## Stuck states
 
@@ -76,6 +76,6 @@ worktree (`` `install.sh::require_main_checkout()` ``). Re-run the same
 command from the main checkout, not the worktree; there is no flag to
 override this [verified].
 
-**A different Outline instance is needed.** `.mcp.json`'s URL is fixed in this
-repo; see [`GAPS.md`](GAPS.md) for what is and is not known about overriding
-it.
+**A different Outline instance is needed.** Set `OUTLINE_MCP_URL` to the other
+instance's MCP endpoint; `.mcp.json` reads it from the environment. Nothing
+validates it, see [`GAPS.md`](GAPS.md) `[verified]`.

@@ -21,14 +21,15 @@ Numbered behaviours this block must keep. Each names the defect it blocks. See
    an unattended script or CI job that happens to call `install.sh --apply`
    from silently registering the plugin.
 
-3. **`--apply` refuses from a linked git worktree.**
-   `` `install.sh::require_main_checkout()` `` compares `git-dir` and
+3. **`--apply` of the install action refuses from a linked git worktree.**
+   `` `install.sh::require_main_checkout()` ``, called only from `do_install()`, compares `git-dir` and
    `git-common-dir` and exits before any mutation when they differ
-   [verified]. Blocks: the marketplace pointing at a worktree path that is
+   [verified]. `--apply --enable`, `--disable` and `--uninstall` are not guarded. Blocks: the marketplace pointing at a worktree path that is
    deleted the moment its branch is removed, which would make the installed
    plugin stop loading with no clear error at that later point.
 
-4. **The worktree guard is enforced twice, independently.** `install.sh` and
+4. **The worktree guard exists twice.** `make install` passes both; a direct
+   `./install.sh --apply` passes the first only, and only that one is tested. `install.sh` and
    `` `Makefile::require_main_checkout` `` both check the same condition
    [verified]. Blocks: a regression in one guard silently removing the only
    protection, since `make install` still refuses even if `install.sh`'s own
