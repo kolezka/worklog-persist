@@ -1,0 +1,25 @@
+{
+  "name": "@kolezka/worklog-persist-dsh",
+  "version": "0.4.0",
+  "private": true,
+  "description": "DeepSeek Harness adapter for the worklog-persist Claude Code plugin",
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "index.js",
+    "bun.lock",
+    "cordis.patch.yml",
+    "locale/*.json"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "claude-plugin-dsh": "0.1.0"
+  }
+}

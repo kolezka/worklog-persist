@@ -1,0 +1,19 @@
+- insert:
+    - id: claude-compat-worklog-persist
+      name: '@kolezka/worklog-persist-dsh'
+# The plugin's .mcp.json declares the `outline` server. A profile that already mounts
+# one (serverName: outline) must keep this row disabled, so it ships disabled:
+# enable it with `- id: claude-compat-worklog-persist-outline` + `disabled: false`.
+- insert:
+    - id: claude-compat-worklog-persist-outline
+      name: '@deepseek-ai/dsh-mcp-client'
+      disabled: true
+      config:
+        serverName: outline
+        transport: streamable-http
+        url: !!js 'process.env.OUTLINE_MCP_URL || ""'
+        failOnStartupError: false
+        headers:
+          CF-Access-Client-Id: !!js 'process.env.CF_ACCESS_CLIENT_ID || ""'
+          CF-Access-Client-Secret: !!js 'process.env.CF_ACCESS_CLIENT_SECRET || ""'
+          Authorization: !!js '"Bearer " + (process.env.OUTLINE_API_TOKEN || "")'

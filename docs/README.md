@@ -1,8 +1,8 @@
 ---
 block: _root
 doc: README
-verified_against: a572e2e
-verified_on: 2026-11-09
+verified_against: a679861
+verified_on: 2026-11-10
 unassigned: [README.md, AGENTS.md, .claude/, .ai/, .gitkeep, .gitattributes, .repo-intel.json, docs/]
 ---
 
