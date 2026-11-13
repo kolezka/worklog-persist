@@ -30,7 +30,7 @@ state file. Those live in [session-hook](../session-hook/README.md) and
 | `pyproject.toml` | Pins the test runner only; `tool.uv.package = false` [verified] |
 | `uv.lock` | Resolved dev dependency versions for `uv run` [verified] |
 | `.gitignore` | Excludes caches, the venv, generated tdd-guard data, and `dsh/node_modules/` [verified] |
-| `dsh/` | DeepSeek Harness bundle: maps the skill, the commands (as `/wl-<name>`, `show` excluded) and both hooks onto DSH events through the published npm runtime `claude-plugin-dsh`, pinned to exactly `0.1.0` in `dsh/package.json` and locked by `dsh/bun.lock`, with no vendored copy; `cordis.patch.yml` carries the `outline` MCP row, disabled by default [verified] |
+| `dsh/` | DeepSeek Harness bundle: maps the skill, the commands (as `/wl-<name>`, `show` excluded) and both hooks onto DSH events through the published npm runtime `claude-plugin-dsh`, pinned to exactly `0.2.0` in `dsh/package.json` and locked by `dsh/bun.lock`, with no vendored copy; `cordis.patch.yml` carries the `outline` MCP row, disabled by default [verified] |
 
 ## Why the dependencies
 

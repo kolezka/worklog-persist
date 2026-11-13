@@ -47,7 +47,7 @@ you are reading. [verified]
 
 `tests/test_dsh.py` copies the plugin to a temp dir without `node_modules`, runs
 `bun install --frozen-lockfile` in its `dsh/`, checks that `claude-plugin-dsh`
-resolves from that install at version `0.1.0`, and decodes the skill body, the eight
+resolves from that install at version `0.2.0`, and decodes the skill body, the eight
 `/wl-` command bodies and the hook events the adapter registers. [verified]
 `tests/test_dsh.py::test_check_rejects_an_adapter_without_its_dependency()` is its
 negative control. [verified] It needs `bun`, `node` and the npm registry or a warm
@@ -70,7 +70,7 @@ flowchart TD
         E[test_redact.py] --> RE["redact.py"]
         F[test_docs_layout.py] --> RF["docs/ tree vs CONVENTIONS.md"]
         S[test_search_dates.py] --> RS["search_dates.py"]
-        J[test_dsh.py] --> RJ["dsh/ adapter on the bun-installed\nclaude-plugin-dsh 0.1.0"]
+        J[test_dsh.py] --> RJ["dsh/ adapter on the bun-installed\nclaude-plugin-dsh 0.2.0"]
     end
     L[test_live_outline.sh] -->|"make live, opt-in,\nneeds OUTLINE_API_TOKEN, OUTLINE_MCP_URL"| O[("real Outline endpoint")]
     N[worklog-panel.test.tsx] -->|"make test-native,\nneeds the claude CLI"| RN["hooks/register.tsx pane,\nfixture Outline"]

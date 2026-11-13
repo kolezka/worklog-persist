@@ -66,7 +66,7 @@ plugins, MCP servers and hooks are left untouched.
 
 `dsh/` is a DeepSeek Harness (DSH) adapter for the same plugin tree. The Claude Code
 install above does not use it and does not change. The adapter imports its runtime
-from the published npm package `claude-plugin-dsh`, pinned to exactly `0.1.0` in
+from the published npm package `claude-plugin-dsh`, pinned to exactly `0.2.0` in
 `dsh/package.json` and locked in `dsh/bun.lock`. There is no vendored copy.
 
 Install the adapter's dependencies first, from a persistent checkout, with Bun and
@@ -81,11 +81,11 @@ Do not rely on `dsh plugin add` to install `claude-plugin-dsh` for you; that has
 not been checked. To check what the adapter registers without a DSH profile:
 
 ```sh
-bun x claude-plugin-dsh@0.1.0 inspect /abs/path/to/worklog-persist
+bun x claude-plugin-dsh@0.2.0 inspect /abs/path/to/worklog-persist
 ```
 
 `inspect` imports the adapter's JavaScript, so run it only on a trusted checkout.
-Do not run the package's `sync` or `scaffold` commands on this adapter: in `0.1.0`
+Do not run the package's `sync` or `scaffold` commands on this adapter: in `0.2.0`
 they write a vendored `claude-compat.js`, which this adapter no longer uses. To move
 to a newer runtime, change the exact version in `dsh/package.json`, run
 `bun install` in `dsh/` to refresh `dsh/bun.lock`, then run `make test`.

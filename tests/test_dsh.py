@@ -13,8 +13,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = "claude-plugin-dsh"
-VERSION = "0.1.0"
-INTEGRITY = "sha512-oQXwpYcLwzxOOSeltN1E4vztrx4tFLkOA9ws0uo4Sw1RlojmL38djKJIiebhJkU78K9omu3YV/csnlM3+PFhIw=="
+VERSION = "0.2.0"
+INTEGRITY = "sha512-pzSobglwIh7NuG5Y5W331kVIg5NExU5wnzW3citMKXl57CMmVW255b5zPLDyVA/ERSgUjhrsugBgkEq5p+S1Zw=="
 
 # Resolves the runtime from the adapter's own directory, then drives the adapter
 # through a fake Cordis context and prints what it registered.
