@@ -6,3 +6,6 @@ __pycache__/
 .codegraph/
 graphify-out/cache/
 dsh/node_modules/
+
+# Claude Code agent worktrees
+.claude/worktrees/
