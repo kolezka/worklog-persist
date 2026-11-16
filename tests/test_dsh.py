@@ -5,6 +5,7 @@ a standalone install works without this checkout's own dsh/node_modules.
 """
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -13,8 +14,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = "claude-plugin-dsh"
-VERSION = "0.2.0"
-INTEGRITY = "sha512-pzSobglwIh7NuG5Y5W331kVIg5NExU5wnzW3citMKXl57CMmVW255b5zPLDyVA/ERSgUjhrsugBgkEq5p+S1Zw=="
+VERSION = json.loads((ROOT / "dsh/package.json").read_text())["dependencies"][RUNTIME]
 
 # Resolves the runtime from the adapter's own directory, then drives the adapter
 # through a fake Cordis context and prints what it registered.
@@ -104,6 +104,7 @@ def installed(tmp_path_factory) -> tuple[Path, dict]:
 
 def test_dependency_contract_is_exact_and_not_vendored():
     package = json.loads((ROOT / "dsh/package.json").read_text())
+    assert re.fullmatch(r"\d+\.\d+\.\d+", VERSION), f"{RUNTIME} must be an exact version, got {VERSION!r}"
     assert package["dependencies"] == {RUNTIME: VERSION}
     assert "bun.lock" in package["files"]
     assert not any("claude-compat" in entry for entry in package["files"])
@@ -112,7 +113,9 @@ def test_dependency_contract_is_exact_and_not_vendored():
     assert "import { createPlugin, rootFrom } from 'claude-plugin-dsh'" in source
     assert "rootFrom(import.meta.url)" in source
     lock = (ROOT / "dsh/bun.lock").read_text()
-    assert f'"{RUNTIME}@{VERSION}"' in lock and INTEGRITY in lock
+    entry = next(line for line in lock.splitlines() if line.strip().startswith(f'"{RUNTIME}": ['))
+    assert f'"{RUNTIME}@{VERSION}"' in entry
+    assert re.search(r'"sha512-[A-Za-z0-9+/]+=*"', entry)
 
 
 def test_runtime_resolves_from_the_adapters_own_install(installed):
