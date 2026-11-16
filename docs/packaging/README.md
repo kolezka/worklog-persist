@@ -3,7 +3,7 @@ block: packaging
 doc: README
 verified_against: a679861
 verified_on: 2026-11-10
-owns: [.claude-plugin/, .mcp.json, dsh/, install.sh, Makefile, pyproject.toml, uv.lock, .gitignore]
+owns: [.claude-plugin/, .mcp.json, dsh/, install.sh, Makefile, pyproject.toml, uv.lock, .gitignore, renovate.json]
 depends_on: [session-hook, persistence-protocol]
 ---
 
@@ -30,7 +30,8 @@ state file. Those live in [session-hook](../session-hook/README.md) and
 | `pyproject.toml` | Pins the test runner only; `tool.uv.package = false` [verified] |
 | `uv.lock` | Resolved dev dependency versions for `uv run` [verified] |
 | `.gitignore` | Excludes caches, the venv, generated tdd-guard data, and `dsh/node_modules/` [verified] |
-| `dsh/` | DeepSeek Harness bundle: maps the skill, the commands (as `/wl-<name>`, `show` excluded) and both hooks onto DSH events through the published npm runtime `claude-plugin-dsh`, pinned to exactly `0.2.0` in `dsh/package.json` and locked by `dsh/bun.lock`, with no vendored copy; `cordis.patch.yml` carries the `outline` MCP row, disabled by default [verified] |
+| `renovate.json` | Renovate config that tracks only `claude-plugin-dsh`: its pin in `dsh/package.json` and the `claude-plugin-dsh@x.y.z` commands in Markdown files, grouped into one PR [verified] |
+| `dsh/` | DeepSeek Harness bundle: maps the skill, the commands (as `/wl-<name>`, `show` excluded) and both hooks onto DSH events through the published npm runtime `claude-plugin-dsh`, pinned to an exact version in `dsh/package.json` and locked by `dsh/bun.lock`, with no vendored copy; `cordis.patch.yml` carries the `outline` MCP row, disabled by default [verified] |
 
 ## Why the dependencies
 
