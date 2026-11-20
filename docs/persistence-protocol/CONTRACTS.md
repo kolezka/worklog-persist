@@ -1,7 +1,7 @@
 ---
 block: persistence-protocol
 doc: CONTRACTS
-verified_against: 9a46932
+verified_against: 5321338
 verified_on: 2026-11-20
 ---
 
@@ -325,8 +325,8 @@ checkpoint, handoff or completion creates one child document of the record,
 titled `<YYYY-MM-DD> <short title>`, with a back-link to the record
 (`skills/worklog-persist/SKILL.md::"Checkpoint history: child documents"`)
 [verified]. Every link the protocol writes, the back-link and the record's line in
-the `Tasks` parent included, is a real Outline link `[<title>](<url>)` with the url
-from an Outline response, never `[[<title>]]`, which Outline keeps as plain text
+the `Tasks` parent included, is a real Outline link: markdown link syntax with the
+url from an Outline response, never `[[<title>]]`, which Outline keeps as plain text
 (`skills/worklog-persist/SKILL.md::"Links are real Outline links"`) [verified].
 
 enforcement: `tests/test_structure.sh::"records and checkpoints link with real Outline links"`

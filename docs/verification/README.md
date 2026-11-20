@@ -1,7 +1,7 @@
 ---
 block: verification
 doc: README
-verified_against: 9a46932
+verified_against: 5321338
 verified_on: 2026-11-20
 owns: [tests/]
 depends_on: [packaging, session-hook, persistence-protocol]
