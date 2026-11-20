@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: INVARIANTS
-verified_against: a679861
-verified_on: 2026-11-10
+verified_against: 9a46932
+verified_on: 2026-11-20
 ---
 
 # Invariants

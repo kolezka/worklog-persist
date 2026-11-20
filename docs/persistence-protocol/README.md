@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: README
-verified_against: a679861
-verified_on: 2026-11-10
+verified_against: 9a46932
+verified_on: 2026-11-20
 owns: [skills/, commands/, scripts/resolve-context.sh, scripts/resolve_context.py, scripts/config-add.sh, scripts/config_add.py, scripts/redact.py, scripts/search_dates.py]
 depends_on: [packaging]
 ---
