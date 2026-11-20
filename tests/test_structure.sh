@@ -85,7 +85,7 @@ grep -q 'history before compaction' "$skill" || fail "skill does not say how to 
 for c in checkpoint handoff complete; do
   grep -q 'Compacting an oversized record' "$ROOT/commands/$c.md" || fail "commands/$c.md may leave an oversized record"
 done
-grep -qF '* **<task-slug>** (<flag>, <YYYY-MM-DD>): <one-line summary>' "$skill" \
+grep -qF '* **[<task-slug>](<record url>)** (<flag>, <YYYY-MM-DD>): <one-line summary>' "$skill" \
   || fail "skill does not state where the Tasks flag lives"
 for c in start checkpoint handoff complete; do
   grep -q "record's line in the \`Tasks\` parent body" "$ROOT/commands/$c.md" || fail "commands/$c.md does not say where the Tasks flag lives"
@@ -96,5 +96,17 @@ note "ok: oversized records are compacted and the Tasks flag has a fixed format"
 grep -q 'If `root_collection_source` is `default`, never create' "$skill" \
   || fail "skill may create a collection the config never named"
 note "ok: a default-only root collection is asked about, not created"
+
+# 12. Links are real Outline links. Outline keeps `[[title]]` as plain text with no backlink.
+for f in "$skill" "$ROOT"/commands/*.md; do
+  if grep -nE '\[\[<[a-z -]+>\]\]|`\[\[(link|doc-title)\]\]`' "$f" | grep -v 'does not resolve'; then
+    fail "$(basename "$f") still asks for a [[title]] link"
+  fi
+done
+grep -q 'Links are real Outline links' "$skill" || fail "skill does not require real Outline links"
+for c in checkpoint handoff complete; do
+  grep -q 'Record: \[<slug>\](<record url>)' "$ROOT/commands/$c.md" || fail "commands/$c.md back-link is not a real link"
+done
+note "ok: records and checkpoints link with real Outline links"
 
 [ "$fails" = 0 ] && echo "PASS test_structure" || { echo "$fails failure(s)"; exit 1; }

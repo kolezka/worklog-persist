@@ -324,7 +324,13 @@ Checkpoints, Related), and stays under about 4,000 characters
 checkpoint, handoff or completion creates one child document of the record,
 titled `<YYYY-MM-DD> <short title>`, with a back-link to the record
 (`skills/worklog-persist/SKILL.md::"Checkpoint history: child documents"`)
-[verified]. The record is updated with `editMode: "patch"` of the changed
+[verified]. Every link the protocol writes, the back-link and the record's line in
+the `Tasks` parent included, is a real Outline link `[<title>](<url>)` with the url
+from an Outline response, never `[[<title>]]`, which Outline keeps as plain text
+(`skills/worklog-persist/SKILL.md::"Links are real Outline links"`) [verified].
+
+enforcement: `tests/test_structure.sh::"records and checkpoints link with real Outline links"`
+(test suite only). The record is updated with `editMode: "patch"` of the changed
 sections, and a write is checked from the write response, not by fetching again
 (`skills/worklog-persist/SKILL.md::"Writing cheaply"`,
 `commands/checkpoint.md::"which already holds the new body"`)
