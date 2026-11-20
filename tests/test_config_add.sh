@@ -173,4 +173,19 @@ else
   echo "skip: stored case mismatch (case-sensitive filesystem)"
 fi
 
+# A world can get its own collection; its projects then resolve without the root.
+wcfg="$tmp/world.yaml"
+WORKLOG_CONFIG="$wcfg" bash "$ADD" project --world Own --name p3 --repo "$tmp/three" >/dev/null
+rc=0; WORKLOG_CONFIG="$wcfg" bash "$ADD" world --name Own --collection OwnKB >/dev/null || rc=$?
+check "world collection: exit 0" "$rc" "0"
+check "world collection: resolves" "$(cd "$tmp/three" && WORKLOG_CONFIG="$wcfg" bash "$RESOLVE" | ident)" "Own config p3 OwnKB/p3 False"
+before="$(sum "$wcfg")"
+check "world collection: same twice is no-op" "$(WORKLOG_CONFIG="$wcfg" bash "$ADD" world --name Own --collection OwnKB >/dev/null; sum "$wcfg")" "$before"
+rc=0; WORKLOG_CONFIG="$wcfg" bash "$ADD" world --name Own --collection Other 2>/dev/null || rc=$?
+check "world collection: different one refused" "$rc:$(sum "$wcfg")" "1:$before"
+rc=0; WORKLOG_CONFIG="$wcfg" bash "$ADD" world --name New --collection NewKB >/dev/null || rc=$?
+check "world collection: new world added" "$rc:$(python3 -c 'import sys,yaml;print([w.get("collection") for w in yaml.safe_load(open(sys.argv[1]))["worlds"]])' "$wcfg")" "0:['OwnKB', 'NewKB']"
+WORKLOG_CONFIG="$wcfg" bash "$ADD" project --world Own --name p2 --repo "$tmp/two" >/dev/null
+check "world collection: kept when a project is added" "$(cd "$tmp/two" && WORKLOG_CONFIG="$wcfg" bash "$RESOLVE" | ident)" "Own config p2 OwnKB/p2 False"
+
 [ "$fails" = 0 ] && echo "PASS test_config_add" || { echo "$fails failure(s)"; exit 1; }

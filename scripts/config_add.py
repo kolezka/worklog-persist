@@ -4,6 +4,7 @@
 Usage:
   config_add.py project --world W --name N --repo PATH [--kb-folder F]
   config_add.py ignore --repo PATH
+  config_add.py world --name W --collection C
 
 The file is the one resolve_context.py reads ($WORKLOG_CONFIG, else the default
 under ~/.config). It is created with its parent dir when missing. Existing
@@ -179,6 +180,26 @@ def add_ignore(data, repo):
     return f"added {repo} to ignore"
 
 
+def set_world_collection(data, world, collection):
+    """Give a world its own Outline collection. A different existing one is never replaced."""
+    worlds = data.get("worlds")
+    if worlds is None:
+        worlds = data["worlds"] = []
+    for w in worlds:
+        if w.get("name") != world:
+            continue
+        current = w.get("collection")
+        if current == collection:
+            return None
+        if current:
+            raise Refused(f"world {world!r} already uses collection {current!r}; "
+                          "ask the operator, nothing changed")
+        w["collection"] = collection
+        return f"set collection {collection!r} for world {world!r}"
+    worlds.append({"name": world, "collection": collection, "projects": []})
+    return f"added world {world!r} with collection {collection!r}"
+
+
 def main_checkout(repo):
     """Map a path in a linked worktree to the same path in the main checkout."""
     try:
@@ -211,7 +232,12 @@ def main(argv):
     pp.add_argument("--kb-folder")
     ip = sub.add_parser("ignore", help="mark a repo as having no Outline folder")
     ip.add_argument("--repo", required=True)
+    wp = sub.add_parser("world", help="give a world its own Outline collection")
+    wp.add_argument("--name", required=True, type=segment)
+    wp.add_argument("--collection", required=True, type=segment)
     args = ap.parse_args(argv[1:])
+    if args.cmd == "world":
+        return run(args, None)
 
     repo = expand(args.repo)
     if not repo or not repo.is_dir():
@@ -226,6 +252,10 @@ def main(argv):
         print(f"config-add: {args.repo} maps to {repo} in the main checkout, which is not "
               "a directory; nothing written", file=sys.stderr)
         return 2
+    return run(args, repo)
+
+
+def run(args, repo):
     try:
         import yaml
     except ImportError:
@@ -237,6 +267,8 @@ def main(argv):
         data = load(path, yaml)
         if args.cmd == "project":
             message = add_project(data, args.world, args.name, repo, args.kb_folder)
+        elif args.cmd == "world":
+            message = set_world_collection(data, args.name, args.collection)
         else:
             message = add_ignore(data, repo)
     except Refused as e:

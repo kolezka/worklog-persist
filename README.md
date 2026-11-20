@@ -239,6 +239,10 @@ worlds:
     projects:
       - {name: my-project, repo: ~/code/my-project}
       - {name: other-project, repo: ~/code/other, kb_folder: My KB/Alpha/custom-folder}
+  - name: Beta
+    collection: Beta
+    projects:
+      - {name: beta-project, repo: ~/code/beta}
 ignore:
   - ~/scratch
 ```
@@ -254,10 +258,15 @@ ignore:
   world stays `UNRESOLVED` and the agent runs onboarding. A repo under `ignore`,
   or below an ignored dir, gets no world and no folder, from any of these.
 - Outside any git repo the project is `workspace`, never the directory name.
-- Records live at `<kb_path>/Tasks/<task-slug>`, where `kb_path` is `kb_folder` or
+- A world with `collection:` lives in that Outline collection instead of a
+  folder under `root_collection`, so its projects sit at `<collection>/<project>`.
+  Set it with `bash scripts/config-add.sh world --name Beta --collection Beta`.
+- Records live at `<kb_path>/Tasks/<task-slug>`, where `kb_path` is `kb_folder`,
+  `<collection>/<project>` for a world with its own collection, or
   `<root_collection>/<World>/<project>`. Ticket slugs (`AD-163-uat-checklist`)
   are accepted.
-- Bootstrap is the plugin's own rule: a world folder gets `INDEX` only, a project
+- Bootstrap is the plugin's own rule: a world folder gets `INDEX` only (a world
+  with its own collection has no world folder), a project
   folder gets `INDEX`, `Specs`, `Plans`, `Tasks`. It is idempotent.
 - When the MCP server is down, `/load` says persistence is unavailable. There is
   no local fallback.

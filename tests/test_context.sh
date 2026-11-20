@@ -213,4 +213,37 @@ check "root from config" "$(cd "$tmp/myproj" && WORKLOG_CONFIG="$tmp/config.yaml
 printf 'worlds:\n  - name: Alpha\n    projects:\n      - {name: p, repo: %s}\n' "$tmp/myproj" > "$tmp/no-outline.yaml"
 check "config without outline block uses default root" "$(cd "$tmp/myproj" && WORKLOG_CONFIG="$tmp/no-outline.yaml" bash "$SCRIPT" | field root_collection_source)" "default"
 
+# A world with its own `collection` is that collection: no root, no world folder.
+# The world is found the same way through the config, the env and the path root.
+own="$tmp/own"
+mkdir -p "$own/ws/a" "$own/ws/b" "$own/ws/c"
+for d in a b c; do git -C "$own/ws/$d" init -q && git -C "$own/ws/$d" commit -q --allow-empty -m init; done
+cat > "$own/config.yaml" <<EOF
+outline:
+  root_collection: RootKB
+worlds:
+  - name: Gamma
+    collection: GammaKB
+    projects:
+      - {name: pa, repo: $own/ws/a}
+      - {name: pb, repo: $own/ws/b}
+  - name: Delta
+    projects:
+      - {name: pd, repo: $tmp/myproj}
+EOF
+oc() { python3 -c 'import sys,json;d=json.load(sys.stdin);print(d["world"],d["world_source"],d["root_collection"],d["root_collection_source"],d["world_collection"],d["record_path"])'; }
+check "own collection: declared project" "$(cd "$own/ws/a" && WORKLOG_CONFIG="$own/config.yaml" bash "$SCRIPT" t | oc)" \
+  "Gamma config GammaKB config GammaKB GammaKB/pa/Tasks/t"
+check "own collection: path root" "$(cd "$own/ws/c" && WORKLOG_CONFIG="$own/config.yaml" bash "$SCRIPT" t | oc)" \
+  "Gamma path-root GammaKB config GammaKB GammaKB/c/Tasks/t"
+check "own collection: env world" "$(cd "$tmp/other" && WORKLOG_CONFIG="$own/config.yaml" WORKLOG_WORLD=Gamma bash "$SCRIPT" t | oc)" \
+  "Gamma env GammaKB config GammaKB GammaKB/other/Tasks/t"
+check "world without collection keeps the root" "$(cd "$tmp/myproj" && WORKLOG_CONFIG="$own/config.yaml" bash "$SCRIPT" t | oc)" \
+  "Delta config RootKB config None RootKB/Delta/pd/Tasks/t"
+check "world collections listed" "$(cd "$tmp/myproj" && WORKLOG_CONFIG="$own/config.yaml" bash "$SCRIPT" | python3 -c 'import sys,json;print(json.load(sys.stdin)["world_collections"])')" \
+  "{'Gamma': 'GammaKB'}"
+printf 'worlds:\n  - name: G\n    collection: [x]\n' > "$own/bad.yaml"
+check "non-string collection is malformed" "$(cd "$tmp/myproj" && WORKLOG_CONFIG="$own/bad.yaml" bash "$SCRIPT" | python3 -c 'import sys,json;d=json.load(sys.stdin);print(d["config"],d["config_error"][:16])')" \
+  "None config malformed"
+
 [ "$fails" = 0 ] && echo "PASS test_context" || { echo "$fails failure(s)"; exit 1; }
