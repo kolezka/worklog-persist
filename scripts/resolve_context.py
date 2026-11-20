@@ -4,8 +4,10 @@
 Prints JSON. The KB structure comes from the plugin's own YAML config
 (`$WORKLOG_CONFIG`, else ~/.config/worklog-persist/config.yaml): collections come
 from its `outline:` block, and a repo declared under `worlds[].projects[]` gets
-its world, project name and optional `kb_folder` from there. No world name is
-hardcoded. Only scripts/config_add.py writes that file.
+its world, project name and optional `kb_folder` from there. A world with its
+own `collection` key lives in that collection, so its projects resolve to
+`<collection>/<project>` instead of `<root_collection>/<World>/<project>`.
+No world name is hardcoded. Only scripts/config_add.py writes that file.
 
 World precedence: (1) a project declared in the config; (2) $WORKLOG_WORLD;
 (3) path root: the config world whose declared repos' common ancestor is the
@@ -89,6 +91,8 @@ def shape_error(data):
     if not isinstance(worlds, list) or not all(isinstance(w, dict) for w in worlds):
         return "`worlds` is not a list of mappings"
     for w in worlds:
+        if w.get("collection") is not None and not isinstance(w.get("collection"), str):
+            return f"world {w.get('name')!r}: `collection` is not a string"
         projects = w.get("projects") or []
         if not isinstance(projects, list) or not all(isinstance(x, dict) for x in projects):
             return f"world {w.get('name')!r}: `projects` is not a list of mappings"
@@ -111,6 +115,14 @@ def find_project(config, repo):
             if p.get("repo") and expand(p["repo"]) == repo:
                 return w.get("name"), p
     return None, None
+
+
+def world_collection(config, world):
+    """The world's own collection from the config, or None when it has none."""
+    for w in (config or {}).get("worlds") or []:
+        if w.get("name") == world and w.get("collection"):
+            return w["collection"]
+    return None
 
 
 def world_repo_roots(config):
@@ -199,7 +211,13 @@ def main(argv):
     world = world or UNRESOLVED
 
     root = outline["root_collection"]
-    kb_path = kb_folder or (f"{root}/{world}/{project}" if world != UNRESOLVED else None)
+    own = world_collection(config, world) if world != UNRESOLVED else None
+    if own:
+        # The world is a collection of its own, so there is no world folder level.
+        root, root_source = own, "config"
+        kb_path = kb_folder or f"{own}/{project}"
+    else:
+        kb_path = kb_folder or (f"{root}/{world}/{project}" if world != UNRESOLVED else None)
 
     print(json.dumps({
         "repo": repo,
@@ -214,6 +232,9 @@ def main(argv):
         "task_slug": slug,
         "root_collection": root,
         "root_collection_source": root_source,
+        "world_collection": own,
+        "world_collections": {w["name"]: w["collection"] for w in (config or {}).get("worlds") or []
+                              if w.get("name") and w.get("collection")},
         "global_collection": outline["global_collection"],
         "archive_collection": outline["archive_collection"],
         "kb_path": kb_path,

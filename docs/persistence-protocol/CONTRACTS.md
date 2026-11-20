@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: CONTRACTS
-verified_against: a679861
-verified_on: 2026-11-10
+verified_against: 9a46932
+verified_on: 2026-11-20
 ---
 
 # Contracts
@@ -80,7 +80,7 @@ Invoked as `skills/worklog-persist/SKILL.md::"bash ${CLAUDE_PLUGIN_ROOT}/scripts
 [verified]. `scripts/resolve_context.py::main()` prints one JSON object with
 these keys: `repo`, `repo_root`, `project`, `world`, `world_source`,
 `candidate_worlds`, `ignored`, `branch`, `worktree`, `task_slug`,
-`root_collection`, `root_collection_source` (`config` or `default`), `global_collection`, `archive_collection`, `kb_path`,
+`root_collection`, `root_collection_source` (`config` or `default`), `world_collection`, `world_collections`, `global_collection`, `archive_collection`, `kb_path`,
 `tasks_path`, `record_path`, `config`, `config_path`, `config_error` [verified].
 
 - `repo_root` is the main checkout, also from a linked worktree
@@ -105,6 +105,13 @@ these keys: `repo`, `repo_root`, `project`, `world`, `world_source`,
 - `kb_path` is the config `kb_folder` when set, else
   `<root_collection>/<world>/<project>`, and `None` while the world is
   `UNRESOLVED` [verified]. `tasks_path` and `record_path` hang off it.
+- A world with its own `collection` in the config is that collection: `kb_path`
+  is `<collection>/<project>` with no world folder, `root_collection` reports that
+  collection and `root_collection_source` is `config`
+  (`scripts/resolve_context.py::world_collection()`) [verified]. This holds for
+  every world tier, so `env` and `path-root` worlds use it too [verified].
+  `world_collection` is that collection or `None`; `world_collections` maps every
+  config world that has one to its collection [verified].
 - `config` is the path that was read, or `None`; `config_path` is where the
   config is looked for, also when it does not exist; `config_error` says why no
   config was used (`not found`, `unreadable`, `malformed`), or is `None`
@@ -122,7 +129,10 @@ enforcement: `tests/test_context.sh::"WORKLOG_WORLD honored"`,
 `tests/test_context.sh::"equal-depth tie is ambiguous"`,
 `tests/test_context.sh::"ignored beats path-root"`,
 `tests/test_context.sh::"non-git project workspace"`,
-`tests/test_context.sh::"old coupling ignored"` and
+`tests/test_context.sh::"old coupling ignored"`,
+`tests/test_context.sh::"own collection: declared project"`,
+`tests/test_context.sh::"own collection: path root"`,
+`tests/test_context.sh::"own collection: env world"` and
 `tests/test_context.sh::"invalid slug rejected"` (test suite only, via
 `make check`, not on every invocation of the script).
 
@@ -144,7 +154,9 @@ does not crash [verified]. The shape it reads:
   own naming sets `outline.root_collection` (and the other two keys, if wanted)
   in their config; see [`README.md`](../../README.md#kb-structure-and-routing) for the exact
   block to add.
-- `worlds:`, a list of `{name, projects}`, where `projects` is a list of
+- `worlds:`, a list of `{name, collection?, projects}`. `collection`, when set,
+  names the Outline collection that holds the world instead of a folder under
+  `root_collection`; it must be a string [verified]. `projects` is a list of
   `{name, repo, kb_folder?}`. `repo` is matched after `~` expansion and symlink
   resolution (`scripts/resolve_context.py::expand()`) [verified].
 - `ignore:`, a list of dirs: a repo equal to or below one of them is `ignored`
@@ -156,6 +168,7 @@ raised [verified].
 
 enforcement: `tests/test_context.sh::"malformed config"`,
 `tests/test_context.sh::"unparseable config"`,
+`tests/test_context.sh::"non-string collection is malformed"`,
 `tests/test_context.sh::"missing config reported"`,
 `tests/test_context.sh::"default config path"` and
 `tests/test_context.sh::"no PyYAML"` (test suite only).
@@ -167,12 +180,16 @@ enforcement: `tests/test_context.sh::"malformed config"`,
 The only sanctioned writer of the config. A thin wrapper
 (`scripts/config-add.sh::"Thin wrapper"`) around `scripts/config_add.py::main()`,
 which writes the same file the resolver reads (it imports
-`scripts/resolve_context.py::config_path()`) [verified]. Two subcommands:
+`scripts/resolve_context.py::config_path()`) [verified]. Three subcommands:
 
 - `project --world W --name N --repo PATH [--kb-folder F]` declares a repo
   (`scripts/config_add.py::add_project()`) [verified];
 - `ignore --repo PATH` marks a repo as having no Outline folder
-  (`scripts/config_add.py::add_ignore()`) [verified].
+  (`scripts/config_add.py::add_ignore()`) [verified];
+- `world --name W --collection C` gives a world its own collection, adding the
+  world when it is missing; the same value twice is a no-op and a different
+  existing collection is refused with exit `1`
+  (`scripts/config_add.py::set_world_collection()`) [verified].
 
 Behaviour [verified, from the code and `tests/test_config_add.sh`]:
 
@@ -231,11 +248,11 @@ When the resolver gives `UNRESOLVED` (so not a `path-root` match), not `ignored`
 or `config not found`, the skill runs its onboarding flow
 (`skills/worklog-persist/SKILL.md::"## Onboarding (unresolved repo)"`)
 [verified]. `/setup` runs the same flow (`commands/setup.md::"Onboarding"`)
-[verified]. The flow: list the top-level documents under `root_collection` as
-the worlds, never hardcoded or cached; ask one question (a world, a new world,
+[verified]. The flow: list the top-level documents under `root_collection`, plus
+the worlds in `world_collections`, as the worlds, never hardcoded or cached; ask one question (a world, a new world,
 or do not persist, plus the project name); record the answer with
-`config-add.sh`; bootstrap a new world with `INDEX` only and then the project
-folder; re-run the resolver and confirm `kb_path` [verified]. Without Outline it
+`config-add.sh`; bootstrap a new world with `INDEX` only (no world folder for a
+world with its own collection) and then the project folder; re-run the resolver and confirm `kb_path` [verified]. Without Outline it
 offers only a typed world or "Skip for this session" and writes nothing to
 Outline [verified].
 

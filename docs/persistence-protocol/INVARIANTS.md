@@ -1,8 +1,8 @@
 ---
 block: persistence-protocol
 doc: INVARIANTS
-verified_against: a679861
-verified_on: 2026-11-10
+verified_against: 9a46932
+verified_on: 2026-11-20
 ---
 
 # Invariants
@@ -141,8 +141,9 @@ project silently starting to land in another world's folder.
 
 ### 14. World names come from Outline or the user, never from the plugin
 
-Onboarding lists the top-level documents under `root_collection` each time and
-never caches them
+Onboarding lists the top-level documents under `root_collection`, plus the
+worlds that have their own collection in the config, each time and never caches
+them
 (`skills/worklog-persist/SKILL.md::"remember or cache world names"`)
 [verified]. Defect prevented: a stale or foreign list steering a repo into a
 world that does not exist for this operator. Convention only; no test drives
@@ -160,7 +161,8 @@ only) [verified].
 
 `skills/worklog-persist/SKILL.md::"Never skip a write because a target is missing"`
 [verified]. Bootstrap creates a missing `root_collection` with `create_collection`,
-then any missing world folder, project folder, `INDEX` or `Tasks` parent, and
+then any missing world folder (none for a world with its own collection),
+project folder, `INDEX` or `Tasks` parent, and
 reports each one it created [verified]. `/checkpoint`, `/handoff` and
 `/complete` run `/start` first when the record or its folder is missing
 (`commands/checkpoint.md::"never skip the write"`) [verified]. A near match

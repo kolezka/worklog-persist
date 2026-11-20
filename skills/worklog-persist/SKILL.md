@@ -59,9 +59,10 @@ JSON. Use its paths as given; never rebuild them by hand.
 |---|---|
 | `world`, `project` | From the plugin config when the repo is declared there, else inferred |
 | `world_source` | `config`, `env` (`$WORKLOG_WORLD`), `path-root` or `fallback` |
-| `kb_path` | Project folder in Outline (`kb_folder` override, else `<root>/<World>/<project>`) |
+| `kb_path` | Project folder in Outline (`kb_folder` override, else `<collection>/<project>` for a world with its own collection, else `<root>/<World>/<project>`) |
 | `tasks_path`, `record_path` | `<kb_path>/Tasks` and `<kb_path>/Tasks/<slug>` |
-| `root_collection`, `global_collection`, `archive_collection` | From the config `outline:` block |
+| `root_collection`, `global_collection`, `archive_collection` | From the config `outline:` block; `root_collection` is the world's own collection when it has one |
+| `world_collection`, `world_collections` | This world's own collection (or null), and every config world that has one |
 | `repo_root`, `worktree`, `branch` | `repo_root` is the main checkout, also from a linked worktree |
 | `ignored` | The config lists this repo, or a parent dir, under `ignore` |
 | `candidate_worlds` | The world names declared in the config |
@@ -108,6 +109,8 @@ Names in angle brackets come from the resolver.
       Tasks/BACKLOG                trivial items, until they grow up
       Packages/<pkg>/              monorepo sub-packages only
     status-reports/  analizy/      per-world, not project work
+<world collection>/                a world with `collection:` in the config is its own
+  <project>/                       collection: no <World>/ level, kb_path = <collection>/<project>
 <global_collection>                Claude's Notebook: SOUL, CONVENTIONS, LESSONS, STACK-NOTES
 <archive_collection>               retired content, Archive/Security
 ```
@@ -143,7 +146,9 @@ unavailable, and each of those is reported, never silent.
    what is missing, and check each child before you create it. This repairs a
    partial folder and never duplicates.
 4. Seeding shape depends on depth: a **world** folder gets `INDEX` only; a
-   **project** folder gets `INDEX`, `Specs`, `Plans`, `Tasks`. Never seed
+   **project** folder gets `INDEX`, `Specs`, `Plans`, `Tasks`. A world with its
+   own collection (`world_collection` set) has no world folder: the project
+   folder sits at the top of that collection. Never seed
    `Specs`/`Plans`/`Tasks` at world level. Running bootstrap twice creates nothing
    new.
 5. A folder that has no `INDEX` is a hub gap. Create the `INDEX`, do not skip it
@@ -161,7 +166,8 @@ ask the operator to fix the file.
 
 1. **Discover worlds.** Run the availability check. If Outline is connected,
    `list_documents` directly under `root_collection` (top level only). Each
-   top-level document title there is a world. Read them live every time: never
+   top-level document title there is a world, and so is each key of
+   `world_collections` (a world that is a collection of its own). Read them live every time: never
    hardcode, remember or cache world names.
 2. **Ask one question.** Offer: each discovered world, "New world" (the user types
    the name), and "Do not persist this repo". In the same question, confirm the
@@ -176,7 +182,8 @@ ask the operator to fix the file.
    was written: show its message and stop. It refuses a repo already declared
    under another world, and a config file it cannot parse.
 4. **Bootstrap.** For a new world, create the world folder under
-   `root_collection` with `INDEX` only. Then bootstrap the project folder
+   `root_collection` with `INDEX` only. A world from `world_collections` gets no
+   world folder. Then bootstrap the project folder
    (`INDEX`, `Specs`, `Plans`, `Tasks`) as in Bootstrap above. Skip this for
    "do not persist".
 5. **Confirm.** Re-run `resolve-context.sh`. It must now show `world_source` =
