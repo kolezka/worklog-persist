@@ -119,8 +119,13 @@ Names in angle brackets come from the resolver.
 - Cross-project lessons and conventions go to `global_collection`. If it is
   missing, create it once as in Bootstrap step 2; never create a second global KB.
 - Never delete. To retire a doc, move it to `archive_collection`.
-- Outline addresses are chains of **titles**. Renaming a folder or doc breaks every
-  `[[link]]` to it. Rename only on request, and across Specs/Plans/Tasks together.
+- Outline addresses are chains of **titles**. Rename only on request, and across
+  Specs/Plans/Tasks together: the resolver finds folders by title.
+- **Links are real Outline links**, `[<title>](<url>)`, with the `url` an Outline
+  response gave for that doc (`create_document`, `list_documents`, a collection
+  tree). Outline does not resolve `[[<title>]]`: it stays plain text with no
+  backlink, and titles like `Tasks` or `INDEX` repeat in every project. A real link
+  survives a rename and shows up in the target's backlinks.
 - Document bodies must not begin with an H1. The title is a separate field.
 
 ## Bootstrap (lazy, idempotent)
@@ -212,7 +217,7 @@ Last updated: YYYY-MM-DD
 ## Blockers           or "None"
 ## Next action        one concrete step
 ## Checkpoints        links to the latest 5 checkpoint docs, newest first
-## Related            [[doc-title]] links to Spec, Plan and other docs
+## Related            [<title>](<url>) links to Spec, Plan and other docs
 ```
 
 Example decision: `Used a checklist, because it keeps the handoff clear.`
@@ -227,7 +232,7 @@ checkpoint doc, not in the record.
 as is to protect its history. Moving is not deleting:
 
 1. Create a checkpoint child titled `<YYYY-MM-DD> history before compaction` and
-   copy the superseded text into it verbatim, with the back-link `Record: [[<slug>]]`.
+   copy the superseded text into it verbatim, with the back-link `Record: [<slug>](<record url>)`.
 2. Rewrite the record's sections to current state only, under the limit, and link
    that child first in `## Checkpoints`.
 3. Report the compaction in one line: old and new size, and the child's title.
@@ -242,7 +247,7 @@ record: `create_document` with `parentDocumentId` = the record's id and title
 `<YYYY-MM-DD> <short title>` (for example `2026-10-16 stop guard tests green`).
 Its body holds what happened at that point: changed files, commands run and their
 decoded outcomes, decisions taken as `<decision>, because <reason>`, and a back-link
-`Record: [[<slug>]]`. Keep it short; it is a log entry, not a second record. Never
+`Record: [<slug>](<record url>)`. Keep it short; it is a log entry, not a second record. Never
 append checkpoint text to the record itself.
 
 ### Writing cheaply
@@ -289,7 +294,7 @@ The flag has no field of its own. It is the text in brackets on the record's lin
 the `Tasks` parent document body, one line per record:
 
 ```
-* **<task-slug>** (<flag>, <YYYY-MM-DD>): <one-line summary>
+* **[<task-slug>](<record url>)** (<flag>, <YYYY-MM-DD>): <one-line summary>
 ```
 
 A new record always gets this line, and each status change patches it
@@ -411,7 +416,9 @@ duplicate existing content (update instead).
 ## Cross-linking
 
 No orphan docs. Every record links its Plan/Spec where they exist; every doc it
-depends on gets a back-link. Add a `## Related` section with `[[doc-title]]` links.
+depends on gets a back-link. Add a `## Related` section with `[<title>](<url>)` links.
+A one-line summary is a sentence about the work, not a bare link: it is what search
+and memory read.
 Update the `Tasks` parent every time a record is created, renamed, status-changed or
 closed. Never expose the operator's Outline collection names or MCP server URL
 in public artifacts, commits or external messages.

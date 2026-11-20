@@ -1,7 +1,7 @@
 ---
 block: session-hook
 doc: README
-verified_against: 9a46932
+verified_against: 5321338
 verified_on: 2026-11-20
 owns: [hooks/, types/, scripts/session-start.sh, scripts/persistence-state.sh, scripts/stop-guard.sh, scripts/stop_guard.py]
 depends_on: [packaging, persistence-protocol]

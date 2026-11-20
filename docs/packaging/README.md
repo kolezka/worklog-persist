@@ -1,7 +1,7 @@
 ---
 block: packaging
 doc: README
-verified_against: 9a46932
+verified_against: 5321338
 verified_on: 2026-11-20
 owns: [.claude-plugin/, .mcp.json, dsh/, install.sh, Makefile, pyproject.toml, uv.lock, .gitignore, renovate.json]
 depends_on: [session-hook, persistence-protocol]
