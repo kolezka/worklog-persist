@@ -1,7 +1,7 @@
 ---
 block: persistence-protocol
 doc: OPERATIONS
-verified_against: 5321338
+verified_against: e7995df
 verified_on: 2026-11-20
 ---
 
@@ -20,7 +20,7 @@ Eight lifecycle slash commands, each a thin pointer into
 
 | Command | Effect | Writes? |
 |---|---|---|
-| `/load` | `commands/load.md::"Load current work-state from Outline before starting substantive work."` | No, `commands/load.md::"Read-only. Do not write."` [verified] |
+| `/load` | `commands/load.md::"Load a task's saved work-state from Outline"` | No, `commands/load.md::"Read-only. Do not write."` [verified] |
 | `/start` | `commands/start.md::"Create or update the Outline task record at the start of a work item."` | Yes |
 | `/checkpoint` | `commands/checkpoint.md::"Update the same Outline task record after a verified milestone."` | Yes, update only |
 | `/handoff` | `commands/handoff.md::"Write a compact handoff state when the session ends, is blocked, or is transferred."` | Yes, update only |

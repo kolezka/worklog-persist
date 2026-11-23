@@ -1,6 +1,6 @@
 ---
 name: load
-description: Load current work-state from Outline before starting substantive work.
+description: Load a task's saved work-state from Outline, when resuming multi-step work or when the user asks for it.
 ---
 
 Run the worklog-persist skill's **load** step.

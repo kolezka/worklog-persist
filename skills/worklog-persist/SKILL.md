@@ -1,6 +1,6 @@
 ---
 name: worklog-persist
-description: Use whenever you start, checkpoint, hand off, or finish non-trivial work, or need prior context on a task/feature/bug/decision. Durable work-state persistence backed by the Outline MCP server — read current state before acting, record task start, checkpoint at verified milestones, write handoff and completion.
+description: Use when the user runs /load, /start, /checkpoint, /handoff or /complete, asks to save, resume or look up a task in Outline, or a multi-step task worth resuming in a later session reaches a verified milestone, a stop or its end. Not for small edits, questions or quick fixes. Durable work-state persistence backed by the Outline MCP server.
 version: 0.3.0
 ---
 
@@ -34,8 +34,10 @@ Helper scripts live under `${CLAUDE_PLUGIN_ROOT}/scripts/`:
 
 ## Precondition: is Outline available?
 
-Before any read or write, confirm the server is connected: attempt
-`list_collections`. If it errors as unavailable, **state once that persistence is
+Once per session, before the first read or write,
+confirm the server is connected: attempt `list_collections`. Later operations in the same session reuse
+that answer and the collection, folder and record ids already found; they do not
+probe again or re-walk the path. Probe again only after an Outline call fails. If it errors as unavailable, **state once that persistence is
 unavailable and continue the task without Outline** — never block work, never
 substitute a local success claim for a failed remote write. A local pending
 record is allowed only if this repository already has a supported local fallback;

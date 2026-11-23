@@ -1,7 +1,7 @@
 ---
 block: _root
 doc: CONVENTIONS
-verified_against: 5321338
+verified_against: e7995df
 verified_on: 2026-11-20
 ---
 
@@ -70,7 +70,7 @@ Every file. *(tested)*
 ---
 block: session-hook                 # must equal the folder path under docs/
 doc: CONTRACTS                      # must equal the file name
-verified_against: 2d0b8af
+verified_against: e7995df
 verified_on: 2026-10-18
 owns: [hooks/, scripts/session-start.sh]   # README.md only
 depends_on: [persistence-protocol]         # README.md only
