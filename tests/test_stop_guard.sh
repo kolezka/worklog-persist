@@ -61,6 +61,9 @@ edit_line() {
   printf '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"%s","name":"Edit","input":{"file_path":"a.py"}}]}}\n' "$1"
 }
 commit_line() {
+  printf '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"%s","name":"Bash","input":{"command":"git push origin main"}}]}}\n' "$1"
+}
+local_commit_line() {
   printf '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"%s","name":"Bash","input":{"command":"git commit -m x"}}]}}\n' "$1"
 }
 # One Bash tool_use with id $1 running command $2 (no quotes or backslashes in $2).
@@ -183,9 +186,14 @@ ship_case "release: decision" "gh release create v1.2.3" rel
 ship_case "publish: decision" "pnpm publish --access public" pub
 ship_case "deploy: decision" "fly deploy" dep
 
-# Case 2d: a commit blocks on its own, with no edits at all.
+# Case 2c: a local commit alone never blocks; only publishing work does.
+t_local="$tmp/local_commit.jsonl"
+local_commit_line "tu-local" > "$t_local"
+check "local commit only: silent" "$(run_guard "$t_local" false "case2c")" ""
+
+# Case 2d: a push blocks on its own, with no edits at all.
 out="$(run_guard "$t_commit" false "case2d")"
-check "commit: decision" "$(printf '%s' "$out" | decision)" "block"
+check "push: decision" "$(printf '%s' "$out" | decision)" "block"
 check "commit: mentions checkpoint" "$(printf '%s' "$out" | grep -c 'worklog-persist skill')" "1"
 # The work dir is not declared anywhere, so the reason sends the model to onboarding.
 check "unresolved: reason points to /setup" \
@@ -315,7 +323,7 @@ check "attended: flag wins over entrypoint" "$(printf '%s' "$out" | decision)" "
 # Case 17: a block the marker cannot record would repeat on every stop, so the
 # hook allows instead: no tool_use id to record, or a state dir it cannot write.
 t_no_id="$tmp/no_id.jsonl"
-printf '%s\n' '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash","input":{"command":"git commit -m x"}}]}}' > "$t_no_id"
+printf '%s\n' '{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash","input":{"command":"git push origin main"}}]}}' > "$t_no_id"
 out="$(run_guard "$t_no_id" false "case17-noid")"
 check "unrecordable: no tool_use id is silent" "$out" ""
 : > "$tmp/state-is-a-file"
@@ -333,11 +341,12 @@ import stop_guard as m
 print(bool(m.SHIP_RE.search(sys.argv[1])))
 " "$1"
 }
-check "SHIP_RE: plain commit" "$(commit_re 'git commit -m x')" "True"
+check "SHIP_RE: local commit is not shipping" "$(commit_re 'git commit -m x')" "False"
 check "SHIP_RE: plain push" "$(commit_re 'git push origin main')" "True"
-check "SHIP_RE: -C option before commit" "$(commit_re 'git -C /repo commit -m x')" "True"
-check "SHIP_RE: -c option before commit" "$(commit_re 'git -c user.email=a@b commit')" "True"
-check "SHIP_RE: commit-tree is not commit" "$(commit_re 'git commit-tree -m x')" "False"
+check "SHIP_RE: -C option before push" "$(commit_re 'git -C /repo push origin main')" "True"
+check "SHIP_RE: -c option before push" "$(commit_re 'git -c user.email=a@b push')" "True"
+check "SHIP_RE: push-like subcommand is not push" "$(commit_re 'git push-tree x')" "False"
+check "SHIP_RE: push --dry-run is not shipping" "$(commit_re 'git push --dry-run origin main')" "False"
 check "SHIP_RE: unrelated git command" "$(commit_re 'git checkout -- file')" "False"
 check "SHIP_RE: gh pr create" "$(commit_re 'gh pr create --title x')" "True"
 check "SHIP_RE: chained -C and -c before push" \

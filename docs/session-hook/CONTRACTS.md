@@ -16,9 +16,11 @@ for the `enforcement:` field format.
 
 Claude Code's plugin loader expects a top-level `hooks` object keyed by event
 name, each value a list of `{matcher, hooks: [...]}` entries `[verified]`. The
-file has exactly one `SessionStart` entry and one `Stop` entry, each with
-`matcher: "*"` and one command hook (`hooks/hooks.json::"matcher"`,
-`hooks/hooks.json::"stop-guard.sh"`) `[verified]`.
+file has exactly one `SessionStart` entry and one `Stop` entry, each with one
+command hook (`hooks/hooks.json::"matcher"`, `hooks/hooks.json::"stop-guard.sh"`)
+`[verified]`. `SessionStart` matches `startup|clear|compact`, so a resumed or
+forked session, which still holds the text, does not get it again; `Stop`
+matches `*` (`hooks/hooks.json::"startup|clear|compact"`) `[verified]`.
 
 enforcement: `tests/test_structure.sh::"hooks.json missing wrapped SessionStart"`
   and `tests/test_structure.sh::"hooks.json missing wrapped Stop"` (test suite);
@@ -181,8 +183,8 @@ enforcement: `tests/test_stop_guard.sh` (test suite only).
 
 It blocks only when the non-sidechain tool calls after the later of the last
 Outline write and the session marker include a `Bash` command that ships work:
-`git commit`/`push`, `gh pr create`/`merge`, `gh release create`, a package
-publish, or a deploy (`scripts/stop_guard.py::SHIP_RE`,
+`git push` (not `--dry-run`), `gh pr create`/`merge`, `gh release create`, a
+package publish, or a deploy. A local `git commit` does not count (`scripts/stop_guard.py::SHIP_RE`,
 `scripts/stop_guard.py::has_shipped()`) `[verified]`. Edits and long runs of
 tool calls never block on their own, however many there are `[verified]`.
 
@@ -220,7 +222,7 @@ A non-integer `WORKLOG_STOP_COOLDOWN_MIN` falls back to its default
 enforcement: `tests/test_stop_guard.sh::"one edit: silent"`,
   `tests/test_stop_guard.sh::"edits only: silent"`,
   `tests/test_stop_guard.sh::"long read-only run: silent"`,
-  `tests/test_stop_guard.sh::"commit: decision"`,
+  `tests/test_stop_guard.sh::"push: decision"`,
   `tests/test_stop_guard.sh::"push: decision"`,
   `tests/test_stop_guard.sh::"pr create: decision"`,
   `tests/test_stop_guard.sh::"pr merge: decision"`,

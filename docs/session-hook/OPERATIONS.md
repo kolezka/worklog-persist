@@ -37,8 +37,8 @@ reads it on every stop `[verified]`:
 |---|---|---|
 | `WORKLOG_STOP_COOLDOWN_MIN` | `scripts/stop_guard.py::DEFAULT_COOLDOWN_MIN` (90) | Minutes with no block after a block or an Outline write. `0` turns it off |
 
-Only a command that ships work can trigger a block: a commit, push, `gh pr
-create`/`merge`, release, publish or deploy (`scripts/stop_guard.py::SHIP_RE`)
+Only a command that ships work can trigger a block: a push, `gh pr
+create`/`merge`, release, publish or deploy (a local commit does not) (`scripts/stop_guard.py::SHIP_RE`)
 `[verified]`. `WORKLOG_STOP_MIN_EDITS` and `WORKLOG_STOP_MIN_TOOLS` were removed
 in 0.3.2 and are ignored `[verified]`. The hook inherits the environment of the
 Claude Code process, so set the variable where Claude Code is launched `[historical: 2026-10-01, scratch-config Stop-hook probe on Claude Code 2.1.286]`.
@@ -132,7 +132,7 @@ rule on its own, since it is the primary driver
 (`scripts/session-start.sh::"best-effort"`) `[verified]`.
 
 **The Stop guard does not fire after work you expected it to catch.**
-Usually expected. With no commit, push, PR, release or deploy since the last
+Usually expected. With no push, PR, release or deploy since the last
 write, inside the cooldown, or in an unattended session it allows the stop on
 purpose
 (`scripts/stop_guard.py::run()`) `[verified]`. It also stays silent when it

@@ -9,8 +9,9 @@ skill. Otherwise prints nothing. Always exits 0: this hook must never crash a
 session or turn an internal error into a stuck stop.
 
 Every block costs the user a turn, so the bar is high: only a Bash command that
-ships work counts (`SHIP_RE`: git commit or push, gh pr create or merge, a
-release, publish or deploy). Edits and long runs of tool calls never block on
+ships work counts (`SHIP_RE`: git push, gh pr create or merge, a release,
+publish or deploy). A local commit is not shipping: it is cheap to redo and
+happens many times per task. Edits and long runs of tool calls never block on
 their own. The hook stays quiet for `WORKLOG_STOP_COOLDOWN_MIN` minutes after a block
 or an Outline write, and never blocks a session nobody is watching (`claude -p`,
 SDK runs).
@@ -43,12 +44,12 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 WRITE_RE = re.compile(r"^mcp__.*outline.*__(create_document|update_document)$")
-# A command that ships work. git commit/push behind any number of `-C <dir>` /
-# `-c key=value` options (`\b...\b(?!-)` so `commit` skips `commit-tree`), a PR
-# opened or merged, a release, a package publish, or a deploy.
+# A command that ships work. git push behind any number of `-C <dir>` /
+# `-c key=value` options (`\b...\b(?!-)` skips `push-tree`, a dry run is not a
+# push), a PR opened or merged, a release, a package publish, or a deploy.
 _GIT_OPT = r"(?:-C\s+\S+|-c\s+\S+=\S+)"
 SHIP_RE = re.compile(
-    rf"\bgit\b(?:\s+{_GIT_OPT})*\s+(?:commit|push)\b(?!-)"
+    rf"\bgit\b(?:\s+{_GIT_OPT})*\s+push\b(?!-)(?![^;&|\n]*--dry-run)"
     r"|\bgh\s+pr\s+(?:create|merge)\b"
     r"|\bgh\s+release\s+create\b"
     r"|\b(?:npm|pnpm|yarn|cargo|uv|poetry|gem)\s+publish\b"
@@ -226,7 +227,7 @@ def has_shipped(subset):
 
 
 def build_reason(identity):
-    lead = ("Work was committed, pushed or shipped since the last Outline write. Run the "
+    lead = ("Work was pushed or shipped since the last Outline write. Run the "
             "worklog-persist skill: checkpoint for ongoing work, handoff if the "
             "session is ending or blocked, or complete if the task is done.")
     trivial = "If the work was trivial and not worth a record, say so in one line and stop."

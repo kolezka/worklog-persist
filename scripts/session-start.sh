@@ -17,7 +17,7 @@ if bash "$here/persistence-state.sh" status | grep -q '^off$'; then
 fi
 
 read -r -d '' CONTEXT <<'CTX' || true
-Outline (MCP server `outline`) is this session's durable work-state store. RULE: before non-trivial work, load current task context from the project's Outline folder (do not redo captured analysis); at task start create or update the task record; checkpoint progress at meaningful verified milestones; write a handoff when the session ends or is blocked; record the real outcome at completion. Use a stable idempotency key (resolved project + task slug) so repeated checkpoints update one record, never duplicate. Never store secrets, tokens, keys or PII. If the `outline` MCP server is not connected, state that persistence is unavailable and continue. Run the worklog-persist skill or /load, /start, /checkpoint, /handoff, /complete, /dry-run, /off for the full protocol.
+Outline (MCP server `outline`) is this session's durable work-state store. Use it for multi-step work worth resuming in a later session: read the task record before re-doing captured analysis, and record verified milestones, a handoff when stopping or blocked, and the outcome when done. Small edits, questions and quick fixes need no record, and reads never require a write. Never store secrets, tokens, keys or PII. If the `outline` MCP server is not connected, say persistence is unavailable and carry on. Protocol: the worklog-persist skill or /load, /start, /checkpoint, /handoff, /complete, /dry-run, /off.
 CTX
 
 # Best-effort: a resolver failure must never break session start.
@@ -45,9 +45,10 @@ elif i:
     # A missing file or a missing entry is onboarding. A file that exists but
     # cannot be used must be fixed first, or /setup would refuse to write it.
     if not error or error.startswith("config not found"):
-        ctx += (" Before any other work, run the onboarding flow in the worklog-persist"
-                " skill (/setup): discover the worlds in Outline, ask the user one question,"
-                " and record the answer with scripts/config-add.sh, never by hand.")
+        ctx += (" When this session first needs to write to Outline,"
+                " run the onboarding flow in the worklog-persist skill (/setup): discover the worlds, ask the"
+                " user one question, and record the answer with scripts/config-add.sh."
+                " Until then, do not interrupt the current task for it.")
     else:
         ctx += (" Fix the config file, or install what the cause names, before writing"
                 " anything to Outline. Do not run /setup until it resolves.")

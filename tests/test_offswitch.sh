@@ -57,6 +57,12 @@ check "no onboarding when resolved by path-root" \
   "$(cd "$ws/newrepo" && WORKLOG_WORLD='' WORKLOG_CONFIG="$pathroot" bash "$ROOT/scripts/session-start.sh" | ctx 'world `Alpha`' '@@none@@')" "False True False"
 # The base reminder text is unchanged in every case.
 check "base rule kept when onboarding" "$(hook /nonexistent | ctx 'Outline (MCP server `outline`) is this session' '@@none@@')" "True True False"
+# The hook describes the tools; it never orders the session to do Outline work first.
+imperative() { python3 -c "import sys,json;c=json.load(sys.stdin)['hookSpecificOutput']['additionalContext'];print('RULE:' in c or 'Before any other work' in c)"; }
+check "no imperative when resolved" "$(hook "$declared" W | imperative)" "False"
+check "no imperative when onboarding" "$(hook /nonexistent | imperative)" "False"
+# SessionStart skips resume and fork: the text is already in that context.
+check "session-start matcher" "$(python3 -c "import json;print(json.load(open('$ROOT/hooks/hooks.json'))['hooks']['SessionStart'][0]['matcher'])")" "startup|clear|compact"
 
 bash "$ROOT/scripts/persistence-state.sh" off >/dev/null
 check "toggled off" "$(bash "$ROOT/scripts/persistence-state.sh" status)" "off"
