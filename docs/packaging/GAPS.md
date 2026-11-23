@@ -1,7 +1,7 @@
 ---
 block: packaging
 doc: GAPS
-verified_against: 5321338
+verified_against: e7995df
 verified_on: 2026-11-20
 ---
 
